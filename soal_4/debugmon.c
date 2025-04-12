@@ -4,6 +4,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <pwd.h>
 #include <ctype.h>
 #include <signal.h>
@@ -12,9 +13,10 @@
 
 #define BUFFER 256
 #define BUFFER2 512
+#define BUFFER3 526
 #define ll long long
 
-void listproc(const char *user) {
+void brain_damage_2(const char *user) {
     struct passwd *pwd = getpwnam(user);
     if (pwd == NULL) {
         fprintf(stderr, "Error: User does not exist\n");
@@ -141,16 +143,15 @@ void listproc(const char *user) {
     closedir(proc);
 }
 
-void daemonrun(const char *user) {
+void run_daemon_to_log_user_activity(const char *user) {
     pid_t pid, sid;
 
     pid = fork();
-    if (pid < 0) {
+    if (pid == -1) {
         exit(EXIT_FAILURE);
     }
 
     if (pid > 0) {
-        printf("Daemon for %s created successfully\n", user);
         exit(EXIT_SUCCESS);
     }
 
@@ -188,7 +189,10 @@ void daemonrun(const char *user) {
         uid_t userUID = pwd->pw_uid;
 
     while (1) {
-        FILE *logfile = fopen("/tmp/debugmon.log", "a");
+        char activityLogPath[BUFFER2];
+        snprintf(activityLogPath, sizeof(activityLogPath), "/tmp/debugmon_%s.log", user);
+
+        FILE *logfile = fopen(activityLogPath, "a");
         if (logfile == NULL) {
             fprintf(stderr, "Error: Unable to open log file\n");
             exit(EXIT_FAILURE);
@@ -251,7 +255,7 @@ void daemonrun(const char *user) {
     }
 }
 
-void daemonstop(const char *user) {
+void stop_daemon_to_log_user_activity(const char *user) {
     char daemonPID[BUFFER];
     snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
 
@@ -270,7 +274,7 @@ void daemonstop(const char *user) {
 
     fclose(pidfile);
 
-    if (kill(pid, SIGTERM) != 0) {
+    if (kill(pid, SIGKILL) != 0) {
         fprintf(stderr, "Error: Failed to terminate daemon process\n");
         exit(EXIT_FAILURE);
     }
@@ -283,7 +287,7 @@ void daemonstop(const char *user) {
     }
 }
 
-bool isblocked(const char *user) {
+bool is_user_on_the_f_up_list(const char *user) {
     FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "r");
     if (blockedlist == NULL) {
         return false;
@@ -303,40 +307,106 @@ bool isblocked(const char *user) {
     }
 }
 
-void failproc(const char *user) {
+void f_up_the_selected_user_system(const char *user) {
     struct passwd *pwd = getpwnam(user);
     if (pwd == NULL) {
         fprintf(stderr, "Error: User does not exist\n");
         exit(EXIT_FAILURE);
     }
 
-    if (isblocked(user)) {
-        fprintf(stderr, "Error: User is already blocked\n");
+    if (is_user_on_the_f_up_list(user)) {
+        fprintf(stderr, "Error: User is already prevented from using any commands. Have mercy\n");
         exit(EXIT_FAILURE);
     }
     else {
         FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "a");
         if (blockedlist == NULL) {
-            fprintf(stderr, "Error: Unable to open blocked user file\n");
+            fprintf(stderr, "Error: Unable to open blocked list file\n");
             exit(EXIT_FAILURE);
         }
-        else {
-            fprintf(blockedlist, "%s\n", user);
-            fclose(blockedlist);
 
-            char daemonPID[BUFFER];
-            snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
-            if (access(daemonPID, F_OK) == 0) {
-                daemonstop(user);
+        fprintf(blockedlist, "%s\n", user);
+        fclose(blockedlist);
+
+        char daemonPID[BUFFER];
+        snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
+        if (access(daemonPID, F_OK) == 0) {
+            stop_daemon_to_log_user_activity(user);
+        }
+
+        uid_t userUID = pwd->pw_uid;
+
+        char activityLogPath[BUFFER2];
+        snprintf(activityLogPath, sizeof(activityLogPath), "/tmp/debugmon_%s.log", user);
+
+        FILE *logfile = fopen(activityLogPath, "a");
+        if (logfile == NULL) {
+            fprintf(stderr, "Error: Unable to open log file\n");
+            exit(EXIT_FAILURE);
+        }
+
+        DIR *proc = opendir("/proc");
+        if (proc == NULL) {
+            fprintf (stderr, "Error: Unable to open folder /proc\n");
+            exit(EXIT_FAILURE);
+        }
+
+        struct dirent *entry;
+
+        uid_t uid;
+        char line[BUFFER], command[BUFFER];
+    
+        time_t rawtime = time(NULL);
+        struct tm *timeinfo = localtime(&rawtime);
+        char currenttime[32];
+
+        strftime(currenttime, sizeof(currenttime), "[%d-%m-%Y]-[%H:%M:%S]", timeinfo);
+
+        while ((entry = readdir(proc)) != NULL) {
+            if (!isdigit(entry->d_name[0])) {
+                continue;
+            }
+    
+            char procStatusPath[BUFFER2];
+            snprintf(procStatusPath, sizeof(procStatusPath), "/proc/%s/status", entry->d_name);
+    
+            FILE *status = fopen(procStatusPath, "r");
+            if (status == NULL) {
+                continue;
+            }
+    
+            
+            while (fgets(line, sizeof(line), status)) {
+                if (strncmp(line, "Uid:", 4) == 0) {
+                    sscanf(line, "Uid:\t%d", &uid);
+                }
+                else if (strncmp(line, "Name:", 5) == 0) {
+                    sscanf(line, "Name:\t%s", command);
+                }
             }
 
-            printf("%s has been blocked successfully\n", user);
+            fclose(status);
+
+            if (uid == userUID) {
+                pid_t pid = atoi(entry->d_name);
+                if (pid > 0 && kill(pid, SIGKILL) == 0) {
+                    printf("Killed process PID: %d\n", pid);
+                    fprintf(logfile, "%s_%s_STATUS(FAILED)\n", currenttime, command);
+                }
+            }
+
         }
+
+        closedir(proc);
+        fclose(logfile);
     }
 }
 
-void blockaccess(const char *user, const char *command) {
-    FILE *logfile = fopen("/tmp/debugmon.log", "a");
+void user_cant_run_debugmon_no_more(const char *user, const char *command) {
+    char activityLogPath[BUFFER2];
+    snprintf(activityLogPath, sizeof(activityLogPath), "/tmp/debugmon_%s.log", user);
+
+    FILE *logfile = fopen(activityLogPath, "a");
     if (logfile == NULL) {
         fprintf(stderr, "Error: Unable to open log file\n");
         exit(EXIT_FAILURE);
@@ -356,10 +426,114 @@ void blockaccess(const char *user, const char *command) {
     exit(EXIT_FAILURE);
 }
 
-void revertfail(const char *user) {
+void run_commands_using_execvp(const char *command, char *const argv[]) {
+    pid_t pid = fork();
+    if (pid == -1) {
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == 0) {
+        execvp(command, argv);
+        fprintf(stderr, "Error: Unable to execute execvp command\n");
+        exit(EXIT_FAILURE);
+    }
+    else {
+        int status;
+        wait(&status);
+        if (WIFEXITED(status)) {}
+        else {
+            fprintf(stderr, "Error: Child process terminated abnormally\n");
+            exit(EXIT_FAILURE); 
+        }
+    }
+}
+void user_cant_run_any_commands_no_more(char const *user) {
+    struct passwd *pwd = getpwnam(user);
+    if (pwd == NULL) {
+        fprintf(stderr, "Error: User does not exist\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char homedir[BUFFER2];
+    snprintf(homedir, sizeof(homedir), "%s", pwd->pw_dir);
+
+    char bashProfilePath[BUFFER3];
+    snprintf(bashProfilePath, sizeof(bashProfilePath), "%s/.bash_profile", homedir);
+
+    char *argv1[] = {"cp", "/bin/bash", "/bin/rbash", NULL};
+    run_commands_using_execvp("cp", argv1);
+
+    char *argv2[] = {"usermod", "-s", "/bin/rbash", (char *)user, NULL};
+    run_commands_using_execvp("usermod", argv2);
+
+    FILE *bashprofile = fopen(bashProfilePath, "w");
+    if (bashprofile == NULL) {
+        fprintf(stderr, "Error: Unable to open bash profile\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(bashprofile,
+            "# .bash_profile\n\n"
+            "if [ -f ~/.bashrc ]; then\n"
+            ". ~/.bashrc\n"
+            "fi\n\n"
+            "readonly PATH=$HOME/programs\n"
+            "export PATH\n");
+    
+    fclose(bashprofile);
+
+    char *argv3[] = {"chattr", "+i", bashProfilePath, NULL};
+    run_commands_using_execvp("chattr", argv3);
+
+    printf("%s has been blocked successfully\n", user);
+}
+
+void un_user_cant_run_any_commands_no_more(char const *user) {
+    struct passwd *pwd = getpwnam(user);
+    if (pwd == NULL) {
+        fprintf(stderr, "Error: User does not exist\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char homedir[BUFFER2];
+    snprintf(homedir, sizeof(homedir), "%s", pwd->pw_dir);
+
+    char bashProfilePath[BUFFER3];
+    snprintf(bashProfilePath, sizeof(bashProfilePath), "%s/.bash_profile", homedir);
+
+    char *argv1[] = {"chattr", "-i", bashProfilePath, NULL};
+    run_commands_using_execvp("chattr", argv1);
+
+
+    FILE *bashprofile = fopen(bashProfilePath, "w");
+    if (bashprofile == NULL) {
+        fprintf(stderr, "Error: Unable to open bash profile\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(bashprofile,
+            "# .bash_profile\n\n"
+            "if [ -f ~/.bashrc ]; then\n"
+            ". ~/.bashrc\n"
+            "fi\n\n"
+            "PATH=$PATH:$HOME/.local/bin:$HOME/bin\n"
+            "export PATH\n");
+    
+    fclose(bashprofile);
+
+    char *argv2[] = {"usermod", "-s", "/bin/bash", (char *)user, NULL};
+    run_commands_using_execvp("usermod", argv2);
+
+    char *argv3[] = {"rm", "/bin/rbash", NULL};
+    run_commands_using_execvp("rm", argv3);
+
+    printf("%s has been unblocked successfully\n", user);
+}
+
+void un_user_cant_run_debugmon_no_more(const char *user) {
     FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "r");
     if (blockedlist == NULL) {
-        fprintf(stderr, "Error: Unable to open blocked user file\n");
+        fprintf(stderr, "Error: Unable to open blocked list file\n");
         exit(EXIT_FAILURE);
     }
 
@@ -387,7 +561,6 @@ void revertfail(const char *user) {
     if (found) {
         remove("/tmp/debugmon_blocked.txt");
         rename("/tmp/debugmon_tmp.txt", "/tmp/debugmon_blocked.txt");
-        printf("%s has been unblocked successfully\n", user);
     }
     else {
         remove("/tmp/debugmon_blocked_tmp.txt");
@@ -409,26 +582,28 @@ int main(int argc, char *argv[]) {
     const char *command = argv[1];
     const char *user = argv[2];
 
-    if (isblocked(user)) {
+    if (is_user_on_the_f_up_list(user)) {
         if (strcmp(command, "revert") != 0) {
-            blockaccess(user, command);
+            user_cant_run_debugmon_no_more(user, command);
         }
     }
 
     if (!strcmp(command, "list")) {
-        listproc(user);
+        brain_damage_2(user);
     }
     else if (!strcmp(command, "daemon")) {
-        daemonrun(user);
+        run_daemon_to_log_user_activity(user);
     }
     else if (!strcmp(command, "stop")) {
-        daemonstop(user);
+        stop_daemon_to_log_user_activity(user);
     }
     else if (!strcmp(command, "fail")) {
-        failproc(user);
+        f_up_the_selected_user_system(user);
+        user_cant_run_any_commands_no_more(user);
     }
     else if (!strcmp(command, "revert")) {
-        revertfail(user);
+        un_user_cant_run_debugmon_no_more(user);
+        un_user_cant_run_any_commands_no_more(user);
     }
     else {
         fprintf(stderr, "Error: Unknown argument\n");
