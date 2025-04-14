@@ -116,7 +116,7 @@ if (is_user_on_the_f_up_list(user)) {
 	}
 }
 ```
-Merupakan bagian dari subsoal 4.C, dimana program memastikan apakah user memiliki akses untuk menjalankan program debugmon.
+Merupakan bagian dari subsoal 4.D: Fail User's System, dimana program memastikan apakah user memiliki akses untuk menjalankan program debugmon.
 
 ```c
 if (!strcmp(command, "list")) {
@@ -147,7 +147,7 @@ Memeriksa value variabel `command` dan mengarahkannya ke cabang yang sesuai dan 
 exit(EXIT_SUCCESS);
 ```
 Setelah function yang berkaitan berhasil dijalankan tanpa kendala, maka program dinyatakan berhasil dieksekusi dan keluar.
-### • Soal 4.A: List User's Process
+### • Soal 4.A: List User's Processes
 ### • Soal 4.B: Activity Logging Daemon
 ### • Soal 4.C: Stop Daemon
 ### • Soal 4.D: Fail User's System
