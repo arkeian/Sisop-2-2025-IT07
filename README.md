@@ -407,7 +407,44 @@ if (uid != userUID || (state != 'R' && state != 'S')) {
 	continue;
 }
 ```
+Memastikan bahwa UID proses yang ditemukan pada `/proc/[PID]/status` sesuai dengan UID user yang menjadi target dari program dan juga memastikan bahwa status proses yang ditemukan pada `/proc/[PID]/status` adalah antara `R` (running) atau `S` (sleeping). Jika kondisi tidak terpenuhi, maka proses tersebut akan dilewati.
 
+```c
+double memusedPercentage;
+if (memtotal > 0) {
+    memusedPercentage = 100.0 * memused / memtotal;
+}
+else {
+    memusedPercentage = 0.0;
+}
+```
+Memastikan bahwa memori total tidak bernilai nol supaya tidak terjadi pembagian dengan nol dan apabila terjadi kasus dimana memori total bernilai nol, maka nilai besar memori yang dipakai suatu proses dalam bentuk persentase dianggap nol. Namun, jika memori total memiliki nilai lebih dari nol, maka besar memori yang dipakai suatu proses dalam bentuk persentase dapat dihitung.
+
+```c
+char procStatPath[BUFFER2];
+snprintf(procStatPath, sizeof(procStatPath), "/proc/%s/stat", entry->d_name);
+
+FILE *stat = fopen(procStatPath, "r");
+if (stat == NULL) {
+    continue;
+}
+```
+Nama file untuk setiap proses yang telah dibaca kemudian disematkan ke dalam `/proc/[PID]/stat` yang juga merupakan sebuah file. Setelah itu, setiap file `/proc/[PID]/stat` dibuka untuk dibaca data yang berkaitan dengan penggunaan cpu setiap proses. Apabila file tidak dapat dibaca maka file akan dilewati.
+
+```c
+unsigned long utime, stime, starttime;
+char ignore[BUFFER];
+for (int i = 0; i < 13; i++) {
+    fscanf(stat, "%s", ignore);
+}
+fscanf(stat, "%lu %lu", &utime, &stime);
+
+for (int i = 0; i < 4; i++) {
+    fscanf(stat, "%s", ignore);
+}
+fscanf(stat, "%lu", &starttime);
+```
+Membaca input dari `/proc/[PID]/stat` dan meng-loop untuk mencari argumen ke-14, ke-15, dan ke-22.
 ### • Soal 4.B: Activity Logging Daemon
 ### • Soal 4.C: Stop Daemon
 ### • Soal 4.D: Fail User's System
