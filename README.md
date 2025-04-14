@@ -319,7 +319,7 @@ while (fgets(line, sizeof(line), meminfo)) {
 	} 
 }
 ```
-Membaca input dari `/proc/meminfo` dan mencari baris yang mempunyai prefix `MemTotal:`. Jika ditemukan, maka data jumlah total memori perangkat diambil dan disimpan ke dalam variabel `memtotal`.
+Membaca input dari `/proc/meminfo` dan mencari baris yang mempunyai prefix `MemTotal:`. Jika ditemukan, maka data jumlah total memori perangkat dalam satuan kB diambil dan disimpan ke dalam variabel `memtotal`.
 
 ```c
 fclose(meminfo);
@@ -418,7 +418,7 @@ else {
     memusedPercentage = 0.0;
 }
 ```
-Memastikan bahwa memori total tidak bernilai nol supaya tidak terjadi pembagian dengan nol dan apabila terjadi kasus dimana memori total bernilai nol, maka nilai besar memori yang dipakai suatu proses dalam bentuk persentase dianggap nol. Namun, jika memori total memiliki nilai lebih dari nol, maka besar memori yang dipakai suatu proses dalam bentuk persentase dapat dihitung.
+Memastikan bahwa memori total tidak bernilai nol supaya tidak terjadi pembagian dengan nol dan apabila terjadi kasus dimana memori total bernilai nol, maka nilai besar memori yang dipakai suatu proses dalam bentuk persentase dianggap nol. Namun, jika memori total memiliki nilai lebih dari nol, maka besar memori yang dipakai suatu proses dalam bentuk persentase dapat dihitung dan disimpan di variabel `memusedPercentage`.
 
 ```c
 char procStatPath[BUFFER2];
@@ -444,7 +444,50 @@ for (int i = 0; i < 4; i++) {
 }
 fscanf(stat, "%lu", &starttime);
 ```
-Membaca input dari `/proc/[PID]/stat` dan meng-loop untuk mencari argumen ke-14, ke-15, dan ke-22.
+Membaca input dari `/proc/[PID]/stat` dan meng-loop untuk mencari argumen ke-14 (utime), ke-15 (stime), dan ke-22 (starttime). Jika ditemukan, maka data utime, stime, dan starttime suatu proses diambil dan disimpan ke dalam variabel yang berkaitan.
+
+```c
+fclose(stat);
+```
+Menutup kembali file `/proc/[PID]/stat`.
+
+```c
+FILE *uptime = fopen("/proc/uptime", "r");
+if (uptime == NULL) {
+    continue;
+}
+```
+Membuka file `/proc/uptime` untuk membaca data uptime sistem setiap kali iterasi loop. Apabila terdapat kasus dimana file tidak dapat dibaca maka file akan dilewati pada iterasi tersebut.
+
+```c
+double sysuptime;
+fscanf(uptime, "%lf", &sysuptime);
+```
+Membaca input dari `/proc/uptime` dan mengambil data uptime sistem dalam satuan detik. Setelah itu, disimpan ke dalam variabel `sysuptime`.
+
+```c
+fclose(uptime);
+```
+Menutup kembali file `/proc/uptime`.
+
+```c
+unsigned long ticks = sysconf(_SC_CLK_TCK);
+double timespent = utime + stime;
+double elapsedtime = sysuptime - (starttime / ticks);
+double cpuusage = 100 * ((timespent / ticks) / elapsedtime);
+```
+Menghitung persentase cpu usage yang digunakan oleh sebuah proses dan menyimpannya ke dalam variabel `cpuusage`.
+
+```c
+printf("%-8s %-8s %-8.2f %-8.2f %s\n", entry->d_name, user, cpuusage, memusedPercentage, command);
+```
+Mengoutput data PID, nama user, cpu usage, memory usage, dan nama command setiap proses yang dijalankan user dengan ketentuan satu baris diisi oleh satu proses ke stdout.
+
+```c
+closedir(proc);
+```
+Menutup kembali direktori `/proc`.
+
 ### • Soal 4.B: Activity Logging Daemon
 ### • Soal 4.C: Stop Daemon
 ### • Soal 4.D: Fail User's System
