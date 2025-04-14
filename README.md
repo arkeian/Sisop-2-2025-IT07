@@ -147,7 +147,204 @@ Memeriksa value variabel `command` dan mengarahkannya ke cabang yang sesuai dan 
 exit(EXIT_SUCCESS);
 ```
 Setelah function yang berkaitan berhasil dijalankan tanpa kendala, maka program dinyatakan berhasil dieksekusi dan keluar.
+
 ### • Soal 4.A: List User's Processes
+
+Pada subsoal 4.A: List User's Processes, kita diperintahkan untuk membuat sebuah program layaknya `ps`, `top`, atau `htop` yang dapat menampilkan semua proses yang sedang berjalan pada suatu user dengan PID, nama command, CPU usage, dan memory usage-nya. Untuk membuat program ini dibuatlah function bernama `brain_damage_2()`, dengan tampilan sebagai berikut:
+```c
+void brain_damage_2(const char *user) {
+    struct passwd *pwd = getpwnam(user);
+    if (pwd == NULL) {
+        fprintf(stderr, "Error: User does not exist\n");
+        exit(EXIT_FAILURE);
+    } 
+    uid_t userUID = pwd->pw_uid;
+    
+    FILE *meminfo = fopen("/proc/meminfo", "r");
+    if (meminfo == NULL) {
+        fprintf (stderr, "Error: Unable to open the content of /proc/meminfo\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[BUFFER];
+    ll memtotal = 0;
+
+    while (fgets(line, sizeof(line), meminfo)) {
+        if (strncmp(line, "MemTotal:", 9) == 0) {
+            sscanf(line, "MemTotal: %lld kB", &memtotal);
+            break;
+        } 
+    }
+
+    fclose(meminfo);
+
+    DIR *proc = opendir("/proc");
+    if (proc == NULL) {
+        fprintf (stderr, "Error: Unable to open folder /proc\n");
+        exit(EXIT_FAILURE);
+    }
+
+    struct dirent *entry;
+
+    printf("%-8s %-8s %-8s %-8s %s\n", "PID", "USER", "\%CPU", "%MEM", "COMMAND");
+
+    while ((entry = readdir(proc)) != NULL) {
+        if (!isdigit(entry->d_name[0])) {
+            continue;
+        }
+
+        char procStatusPath[BUFFER2];
+        snprintf(procStatusPath, sizeof(procStatusPath), "/proc/%s/status", entry->d_name);
+
+        FILE *status = fopen(procStatusPath, "r");
+        if (status == NULL) {
+            continue;
+        }
+
+        uid_t uid;
+        char command[BUFFER];
+        ll memused = 0;
+        char state;
+
+        while (fgets(line, sizeof(line), status)) {
+            if (strncmp(line, "Uid:", 4) == 0) {
+                sscanf(line, "Uid:\t%d", &uid);
+            }
+            else if (strncmp(line, "Name:", 5) == 0) {
+                sscanf(line, "Name:\t%s", command);
+            }
+            else if (strncmp(line, "VmRSS:", 6) == 0) {
+                sscanf(line, "VmRSS:\t%lld kB", &memused);
+            }
+            else if (strncmp(line, "State:", 6) == 0) {
+                sscanf(line, "State:\t%c", &state);
+            }
+        }
+
+        fclose(status);
+
+        if (uid != userUID || (state != 'R' && state != 'S')) {
+            continue;
+        }
+
+        double memusedPercentage;
+        if (memtotal > 0) {
+            memusedPercentage = 100.0 * memused / memtotal;
+        }
+        else {
+            memusedPercentage = 0.0;
+        }
+
+        char procStatPath[BUFFER2];
+        snprintf(procStatPath, sizeof(procStatPath), "/proc/%s/stat", entry->d_name);
+
+        FILE *stat = fopen(procStatPath, "r");
+        if (stat == NULL) {
+            continue;
+        }
+
+        unsigned long utime, stime, starttime;
+        char ignore[BUFFER];
+        for (int i = 0; i < 13; i++) {
+            fscanf(stat, "%s", ignore);
+        }
+        fscanf(stat, "%lu %lu", &utime, &stime);
+
+        for (int i = 0; i < 4; i++) {
+            fscanf(stat, "%s", ignore);
+        }
+        fscanf(stat, "%lu", &starttime);
+        
+        fclose(stat);
+
+        FILE *uptime = fopen("/proc/uptime", "r");
+        if (uptime == NULL) {
+            continue;
+        }
+
+        double sysuptime;
+        fscanf(uptime, "%lf", &sysuptime);
+        
+        fclose(uptime);
+
+        unsigned long ticks = sysconf(_SC_CLK_TCK);
+        double timespent = utime + stime;
+        double elapsedtime = sysuptime - (starttime / ticks);
+        double cpuusage = 100 * ((timespent / ticks) / elapsedtime);
+
+        printf("%-8s %-8s %-8.2f %-8.2f %s\n", entry->d_name, user, cpuusage, memusedPercentage, command);
+
+    }
+
+    closedir(proc);
+}
+```
+Dimana:
+
+```c
+void brain_damage_2(const char *user) {
+	...
+}
+```
+Merupakan deklarasi `brain_damage_2()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan ditampilkan proses-proses yang sedang dijalankannya.
+
+```c
+struct passwd *pwd = getpwnam(user);
+if (pwd == NULL) {
+	fprintf(stderr, "Error: User does not exist\n");
+	exit(EXIT_FAILURE);
+} 
+uid_t userUID = pwd->pw_uid;
+```
+Mengambil data UID user dari entry user yang disimpan pada `/etc/passwd`. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+FILE *meminfo = fopen("/proc/meminfo", "r");
+if (meminfo == NULL) {
+	fprintf (stderr, "Error: Unable to open the content of /proc/meminfo\n");
+	exit(EXIT_FAILURE);
+}
+```
+Membuka file `/proc/meminfo` untuk mengambil data jumlah memori total yang terdapat pada perangkat yang menjalankan program debugmon. Apabila tidak ditemukan atau tidak dapat membuka `/proc/meminfo`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+char line[BUFFER];
+ll memtotal = 0;
+
+while (fgets(line, sizeof(line), meminfo)) {
+	if (strncmp(line, "MemTotal:", 9) == 0) {
+		sscanf(line, "MemTotal: %lld kB", &memtotal);
+		break;
+	} 
+}
+```
+Mengambil input dari `/proc/meminfo` dan mencari baris yang mempunyai prefix `MemTotal:`. Jika ditemukan, maka data jumlah total memori perangkat diambil dan disimpan ke variabel `memtotal`.
+
+```c
+fclose(meminfo);
+```
+Menutup kembali file `/proc/meminfo`.
+
+```c
+DIR *proc = opendir("/proc");
+if (proc == NULL) {
+	fprintf (stderr, "Error: Unable to open folder /proc\n");
+	exit(EXIT_FAILURE);
+}
+```
+Membuka direktori `/proc` yang berisi file-file yang berhubungan dengan proses yang ada pada sistem user. Apabila tidak ditemukan atau tidak dapat membuka `/proc`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+struct dirent *entry;
+```
+Mendeklarasikan struct yang berisi directory entry untuk setiap file proses yang terdapat pada `/proc`.
+
+```c
+printf("%-8s %-8s %-8s %-8s %s\n", "PID", "USER", "\%CPU", "%MEM", "COMMAND");
+```
+Mengoutput heading untuk kolom PID, USER, STATUS, %CPU, %MEM, dan COMMAND ke stdout, hanya sebagai aspek desain estetika.
+
 ### • Soal 4.B: Activity Logging Daemon
 ### • Soal 4.C: Stop Daemon
 ### • Soal 4.D: Fail User's System
