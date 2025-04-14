@@ -20,7 +20,7 @@
 ### • Soal 2.C
 ### • Soal 2.D
 ### • Soal 2.E
-### • SOal 2.F
+### • Soal 2.F
 ### • Soal 2.G
 ### • Kendala Pengerjaan Soal
 ## • Soal 3
@@ -297,7 +297,7 @@ if (pwd == NULL) {
 } 
 uid_t userUID = pwd->pw_uid;
 ```
-Mengambil data UID user dari entry user yang disimpan pada `/etc/passwd`. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+Mengambil data UID user dari entry user yang disimpan pada `/etc/passwd` dan menyimpannya ke dalam variabel userUID. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 FILE *meminfo = fopen("/proc/meminfo", "r");
@@ -306,7 +306,7 @@ if (meminfo == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-Membuka file `/proc/meminfo` untuk mengambil data jumlah memori total yang terdapat pada perangkat yang menjalankan program debugmon. Apabila tidak ditemukan atau tidak dapat membuka `/proc/meminfo`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+Membuka file `/proc/meminfo` untuk membaca data jumlah memori total yang terdapat pada perangkat yang menjalankan program debugmon. Apabila tidak ditemukan atau tidak dapat membuka `/proc/meminfo`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 char line[BUFFER];
@@ -319,7 +319,7 @@ while (fgets(line, sizeof(line), meminfo)) {
 	} 
 }
 ```
-Mengambil input dari `/proc/meminfo` dan mencari baris yang mempunyai prefix `MemTotal:`. Jika ditemukan, maka data jumlah total memori perangkat diambil dan disimpan ke variabel `memtotal`.
+Membaca input dari `/proc/meminfo` dan mencari baris yang mempunyai prefix `MemTotal:`. Jika ditemukan, maka data jumlah total memori perangkat diambil dan disimpan ke dalam variabel `memtotal`.
 
 ```c
 fclose(meminfo);
@@ -344,6 +344,69 @@ Mendeklarasikan struct yang berisi directory entry untuk setiap file proses yang
 printf("%-8s %-8s %-8s %-8s %s\n", "PID", "USER", "\%CPU", "%MEM", "COMMAND");
 ```
 Mengoutput heading untuk kolom PID, USER, STATUS, %CPU, %MEM, dan COMMAND ke stdout, hanya sebagai aspek desain estetika.
+
+```c
+ while ((entry = readdir(proc)) != NULL) {
+	if (!isdigit(entry->d_name[0])) {
+		 continue;
+	}
+
+	...
+}
+```
+Membaca setiap nama file proses yang terdapat pada `/proc`, umumnya nama file proses hanya terdiri atas angka yang merepresentasikan PID-nya. Oleh karena itu, file lain yang bukan merupakan sebuah proses seperti `meminfo` dan `cpuinfo` akan dilewati. Selain itu, jika sudah tidak ada nama file lagi untuk dibaca maka, while-loop akan bernilai false dan loop akan berhenti.
+
+```c
+char procStatusPath[BUFFER2];
+snprintf(procStatusPath, sizeof(procStatusPath), "/proc/%s/status", entry->d_name);
+
+FILE *status = fopen(procStatusPath, "r");
+if (status == NULL) {
+	continue;
+}
+```
+Nama file untuk setiap proses yang telah dibaca kemudian disematkan ke dalam `/proc/[PID]/status` yang juga merupakan sebuah file. Setelah itu, setiap file `/proc/[PID]/status` dibuka untuk dibaca data seperti UID, memori yang dipakai, status, dan nama command setiap proses. Apabila file tidak dapat dibaca maka file akan dilewati.
+
+```c
+uid_t uid;
+char command[BUFFER];
+ll memused = 0;
+char state;
+```
+Mendeklarasikan variabel-variabel, dimana:
+- `uid`: untuk menyimpan data UID suatu proses.
+- `command[]`: untuk menyimpan nama suatu proses.
+- `memused`: untuk menyimpan besar memori yang dipakai suatu proses.
+- `state`: untuk menyimpan status suatu proses, seperti running, idle, zombie, stopped, atau lainnya.
+
+```c
+while (fgets(line, sizeof(line), status)) {
+	if (strncmp(line, "Uid:", 4) == 0) {
+		sscanf(line, "Uid:\t%d", &uid);
+	}
+	else if (strncmp(line, "Name:", 5) == 0) {
+		sscanf(line, "Name:\t%s", command);
+	}
+	else if (strncmp(line, "VmRSS:", 6) == 0) {
+		sscanf(line, "VmRSS:\t%lld kB", &memused);
+	}
+	else if (strncmp(line, "State:", 6) == 0) {
+		sscanf(line, "State:\t%c", &state);
+	}
+}
+```
+Membaca input dari `/proc/[PID]/status` dan mencari baris yang mempunyai prefix `UID:`, `Name:`, `VmRSS`, dan `State:`. Jika ditemukan, maka data UID, nama command, memori yang dipakai, dan status suatu proses diambil dan disimpan ke dalam variabel yang berkaitan. 
+
+```c
+fclose(status);
+```
+Menutup kembali file `/proc/[PID]/status`.
+
+```c
+if (uid != userUID || (state != 'R' && state != 'S')) {
+	continue;
+}
+```
 
 ### • Soal 4.B: Activity Logging Daemon
 ### • Soal 4.C: Stop Daemon
