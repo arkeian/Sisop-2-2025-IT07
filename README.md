@@ -147,12 +147,12 @@ Memeriksa value variabel `command` dan mengarahkannya ke cabang yang sesuai dan 
 exit(EXIT_SUCCESS);
 ```
 Setelah function yang berkaitan berhasil dijalankan tanpa kendala, maka program dinyatakan berhasil dieksekusi dan keluar.
-### • Soal 4.A
-### • Soal 4.B
-### • Soal 4.C
-### • Soal 4.D
-### • Soal 4.E
-### • Soal 4.F
+### • Soal 4.A: List User's Process
+### • Soal 4.B: Activity Logging Daemon
+### • Soal 4.C: Stop Daemon
+### • Soal 4.D: Fail User's System
+### • Soal 4.E: Revert Failing
+### • Soal 4.F: Debugmon Log File
 ### • Kendala Pengerjaan Soal
 ## • Revisi
 ### • Revisi Soal 1
