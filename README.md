@@ -1132,13 +1132,255 @@ else {
 
 ### • Soal 4.D: Fail User's System
 
-Pada subsoal 4.C: Fail User's System, kita diperintahkan untuk membuat sebuah program untuk menggagalkan dan mematikan semua proses yang sedang dijalankan oleh target user. Selain itu, program akan memblokir user untuk menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah empat function bernama `f_up_the_selected_user_system()`, `is_user_on_the_f_up_list()`, `user_cant_run_debugmon_no_more()`, dan `run_commands_using_execvp()` dengan tampilan sebagai berikut:
+Pada subsoal 4.C: Fail User's System, kita diperintahkan untuk membuat sebuah program untuk menggagalkan dan mematikan semua proses yang sedang dijalankan oleh target user. Selain itu, program akan memblokir user untuk menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah lima function bernama `f_up_the_selected_user_system()`, `is_user_on_the_f_up_list()`, `user_cant_run_debugmon_no_more()`, `user_cant_run_any_commands_no_more()`, dan `run_commands_using_execvp()` dengan tampilan sebagai berikut:
 
 #### a. Soal 4.D.1: `f_up_the_selected_user_system()`
-#### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
-#### c. Soal 4.D.3: `user_cant_run_debugmon_no_more()`
-#### d. Soal 4.D.4: `run_commands_using_execvp()`
 
+```c
+void f_up_the_selected_user_system(const char *user) {
+    struct passwd *pwd = getpwnam(user);
+    if (pwd == NULL) {
+        fprintf(stderr, "Error: User does not exist\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (is_user_on_the_f_up_list(user)) {
+        fprintf(stderr, "Error: User is already prevented from using any commands. Have mercy\n");
+        exit(EXIT_FAILURE);
+    }
+    else {
+        FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "a");
+        if (blockedlist == NULL) {
+            fprintf(stderr, "Error: Unable to open blocked list file\n");
+            exit(EXIT_FAILURE);
+        }
+
+        fprintf(blockedlist, "%s\n", user);
+        fclose(blockedlist);
+
+        char daemonPID[BUFFER];
+        snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
+        if (access(daemonPID, F_OK) == 0) {
+            stop_daemon_to_log_user_activity(user);
+        }
+
+        uid_t userUID = pwd->pw_uid;
+
+        char activityLogPath[BUFFER2];
+        snprintf(activityLogPath, sizeof(activityLogPath), "/tmp/debugmon_%s.log", user);
+
+        FILE *logfile = fopen(activityLogPath, "a");
+        if (logfile == NULL) {
+            fprintf(stderr, "Error: Unable to open log file\n");
+            exit(EXIT_FAILURE);
+        }
+
+        DIR *proc = opendir("/proc");
+        if (proc == NULL) {
+            fprintf (stderr, "Error: Unable to open folder /proc\n");
+            exit(EXIT_FAILURE);
+        }
+
+        struct dirent *entry;
+
+        uid_t uid;
+        char line[BUFFER], command[BUFFER];
+    
+        time_t rawtime = time(NULL);
+        struct tm *timeinfo = localtime(&rawtime);
+        char currenttime[32];
+
+        strftime(currenttime, sizeof(currenttime), "[%d-%m-%Y]-[%H:%M:%S]", timeinfo);
+
+        while ((entry = readdir(proc)) != NULL) {
+            if (!isdigit(entry->d_name[0])) {
+                continue;
+            }
+    
+            char procStatusPath[BUFFER2];
+            snprintf(procStatusPath, sizeof(procStatusPath), "/proc/%s/status", entry->d_name);
+    
+            FILE *status = fopen(procStatusPath, "r");
+            if (status == NULL) {
+                continue;
+            }
+    
+            
+            while (fgets(line, sizeof(line), status)) {
+                if (strncmp(line, "Uid:", 4) == 0) {
+                    sscanf(line, "Uid:\t%d", &uid);
+                }
+                else if (strncmp(line, "Name:", 5) == 0) {
+                    sscanf(line, "Name:\t%s", command);
+                }
+            }
+
+            fclose(status);
+
+            if (uid == userUID) {
+                pid_t pid = atoi(entry->d_name);
+                if (pid > 0 && kill(pid, SIGKILL) == 0) {
+                    printf("Killed process PID: %d\n", pid);
+                    fprintf(logfile, "%s_%s_STATUS(FAILED)\n", currenttime, command);
+                }
+            }
+
+        }
+
+        closedir(proc);
+        fclose(logfile);
+    }
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+```
+
+#### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
+
+```c
+bool is_user_on_the_f_up_list(const char *user) {
+    FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "r");
+    if (blockedlist == NULL) {
+        return false;
+    }
+    else {
+        char line[BUFFER];
+
+        while (fgets(line, sizeof(line), blockedlist)) {
+            line[strcspn(line, "\n")] = '\0';
+            if (strcmp(line, user) == 0) {
+                fclose(blockedlist);
+                return true;
+            } 
+        }
+        fclose(blockedlist);
+        return false;
+    }
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+
+```
+
+#### c. Soal 4.D.3: `user_cant_run_debugmon_no_more()`
+
+```c
+void user_cant_run_debugmon_no_more(const char *user, const char *command) {
+    char activityLogPath[BUFFER2];
+    snprintf(activityLogPath, sizeof(activityLogPath), "/tmp/debugmon_%s.log", user);
+
+    FILE *logfile = fopen(activityLogPath, "a");
+    if (logfile == NULL) {
+        fprintf(stderr, "Error: Unable to open log file\n");
+        exit(EXIT_FAILURE);
+    }
+    else {
+        time_t rawtime = time(NULL);
+        struct tm *timeinfo = localtime(&rawtime);
+        char currenttime[32];
+
+        strftime(currenttime, sizeof(currenttime), "[%d-%m-%Y]-[%H:%M:%S]", timeinfo);
+
+        fprintf(logfile, "%s_./debugmon %s %s_STATUS(FAILED)\n", currenttime, command, user);
+        fclose(logfile);
+    }
+
+    fprintf(stderr, "Error: User is blocked from using this program\n");
+    exit(EXIT_FAILURE);
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+```
+
+#### d. Soal 4.D.4: `user_cant_run_any_commands_no_more()`
+
+```c
+void user_cant_run_any_commands_no_more(char const *user) {
+    struct passwd *pwd = getpwnam(user);
+    if (pwd == NULL) {
+        fprintf(stderr, "Error: User does not exist\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char homedir[BUFFER2];
+    snprintf(homedir, sizeof(homedir), "%s", pwd->pw_dir);
+
+    char bashProfilePath[BUFFER3];
+    snprintf(bashProfilePath, sizeof(bashProfilePath), "%s/.bash_profile", homedir);
+
+    char *argv1[] = {"cp", "/bin/bash", "/bin/rbash", NULL};
+    run_commands_using_execvp("cp", argv1);
+
+    char *argv2[] = {"usermod", "-s", "/bin/rbash", (char *)user, NULL};
+    run_commands_using_execvp("usermod", argv2);
+
+    FILE *bashprofile = fopen(bashProfilePath, "w");
+    if (bashprofile == NULL) {
+        fprintf(stderr, "Error: Unable to open bash profile\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(bashprofile,
+            "# .bash_profile\n\n"
+            "if [ -f ~/.bashrc ]; then\n"
+            ". ~/.bashrc\n"
+            "fi\n\n"
+            "readonly PATH=$HOME/programs\n"
+            "export PATH\n");
+    
+    fclose(bashprofile);
+
+    char *argv3[] = {"chattr", "+i", bashProfilePath, NULL};
+    run_commands_using_execvp("chattr", argv3);
+
+    printf("%s has been blocked successfully\n", user);
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+```
+
+#### e. Soal 4.D.5: `run_commands_using_execvp()`
+
+```c
+void run_commands_using_execvp(const char *command, char *const argv[]) {
+    pid_t pid = fork();
+    if (pid == -1) {
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == 0) {
+        execvp(command, argv);
+        fprintf(stderr, "Error: Unable to execute execvp command\n");
+        exit(EXIT_FAILURE);
+    }
+    else {
+        int status;
+        wait(&status);
+        if (WIFEXITED(status)) {}
+        else {
+            fprintf(stderr, "Error: Child process terminated abnormally\n");
+            exit(EXIT_FAILURE); 
+        }
+    }
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+```
 ### • Soal 4.E: Revert Failing
 ### • Soal 4.F: Debugmon Log File
 ### • Kendala Pengerjaan Soal
