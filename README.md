@@ -146,6 +146,38 @@ Program akan mengunduh file ZIP dari internet, menyimpannya sebagai starterkit.z
 ./starterkit
 ```
 ### • Soal 2.B
+Pada soal ini, kita membuat fitur yang bisa untuk membuat sebuah directory karantina yang dapat mendecrypt nama file yang ada di dalamnya menggunakan algoritma base64. Functionnya yaitu sebagai berikut :
+```c
+void daemonize() {
+    pid_t pid = fork();
+    if (pid > 0) exit(0); // parent keluar
+    setsid(); // jadi session leader
+    chdir("/home/zenal_24/Praktikum_Sisop25/modul2/");
+    close(STDIN_FILENO); close(STDOUT_FILENO); close(STDERR_FILENO);
+}
+
+void decrypt_and_move_files() {
+    DIR *dir = opendir(EXTRACT_DIR);
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type != DT_REG) continue;
+        int out_len = base64_decode(entry->d_name, decoded);
+        snprintf(dst_path, sizeof(dst_path), "%s/%s", QUARANTINE_DIR, decoded);
+        rename(src_path, dst_path);
+    }
+    closedir(dir);
+}
+
+void daemon_loop() {
+    while (1) {
+        decrypt_and_move_files();
+        sleep(5);
+    }
+}
+```
+Program menjalankan sebuah daemon (background process) untuk mendekripsi nama file terenkripsi (Base64) yang ada di direktori starter_kit. Hasil dekripsi akan dipindahkan ke direktori quarantine. Untuk menjalankan program tersebut, bisa menggunakan argumen berikut :
+```
+./starterkit --decrypt
+```
 ### • Soal 2.C
 ### • Soal 2.D
 ### • Soal 2.E
