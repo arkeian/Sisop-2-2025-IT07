@@ -1041,6 +1041,61 @@ fclose(logfile);
 21. Menutup kembali file `/tmp/debugmon_[USER].log` (logfile).
 
 ### • Soal 4.C: Stop Daemon
+
+Pada subsoal 4.C: Stop Daemon, kita diperintahkan untuk membuat sebuah program untuk mematikan program daemon yang telah dijalankan sebelumnya menggunakan `run_daemon_to_log_user_activity()`. Untuk membuat program ini dibuatlah function bernama `stop_daemon_to_log_user_activity()`, dengan tampilan sebagai berikut:
+
+```c
+void stop_daemon_to_log_user_activity(const char *user) {
+    char daemonPID[BUFFER];
+    snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
+
+    FILE *pidfile = fopen(daemonPID, "r");
+    if (pidfile == NULL) {
+        fprintf(stderr, "Error: User PID not found\n");
+        exit(EXIT_FAILURE);
+    }
+
+    pid_t pid;
+    if (fscanf(pidfile, "%d", &pid) != 1) {
+        fprintf(stderr, "Error: Failed to read PID from file\n");
+        fclose(pidfile);
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(pidfile);
+
+    if (kill(pid, SIGKILL) != 0) {
+        fprintf(stderr, "Error: Failed to terminate daemon process\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if (remove(daemonPID) != 0) {
+        fprintf(stderr, "Error: Failed to remove PID file\n");
+        exit(EXIT_FAILURE);
+    } else {
+        printf("Daemon for %s stopped successfully\n", user);
+    }
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+char daemonPID[BUFFER];
+snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
+
+FILE *pidfile = fopen(daemonPID, "r");
+if (pidfile == NULL) {
+	fprintf(stderr, "Error: User PID not found\n");
+	exit(EXIT_FAILURE);
+}
+```
+1. Membaca file yang dibuat oleh `run_daemon_to_log_user_activity()` pada folder `/tmp` dengan nama `debugmon_[USER].pid`, yang digunakan untuk menyimpan data PID daemon yang dijalankan untuk suatu user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].pid`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+pid_t pid;
+```
+2. Menyimpan data PID daemon yang diambil dari `/tmp/debugmon_[USER].pid` ke dalam variabel `pid`.
 ### • Soal 4.D: Fail User's System
 ### • Soal 4.E: Revert Failing
 ### • Soal 4.F: Debugmon Log File
