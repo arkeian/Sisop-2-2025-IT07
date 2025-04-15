@@ -1081,6 +1081,14 @@ void stop_daemon_to_log_user_activity(const char *user) {
 Dimana langkah implementasinya:
 
 ```c
+void stop_daemon_to_log_user_activity(const char *user) {
+	...
+} 
+```
+1. Mendeklarasikan `stop_daemon_to_log_user_activity()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dimatikan proses daemonnya.
+
+```c
 char daemonPID[BUFFER];
 snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
 
@@ -1090,12 +1098,12 @@ if (pidfile == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-1. Membuka file yang dibuat oleh `run_daemon_to_log_user_activity()` pada folder `/tmp` dengan nama `debugmon_[USER].pid`, yang digunakan untuk menyimpan data PID daemon yang dijalankan untuk suatu user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].pid`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+2. Membuka file yang dibuat oleh `run_daemon_to_log_user_activity()` pada folder `/tmp` dengan nama `debugmon_[USER].pid`, yang digunakan untuk menyimpan data PID daemon yang dijalankan untuk suatu user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].pid`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 pid_t pid;
 ```
-2. Menyimpan data PID daemon yang diambil dari `/tmp/debugmon_[USER].pid` ke dalam variabel `pid`.
+3. Menyimpan data PID daemon yang diambil dari `/tmp/debugmon_[USER].pid` ke dalam variabel `pid`.
 
 ```c
 if (fscanf(pidfile, "%d", &pid) != 1) {
@@ -1104,12 +1112,12 @@ if (fscanf(pidfile, "%d", &pid) != 1) {
         exit(EXIT_FAILURE);
 }
 ```
-3. Membaca data PID daemon yang tersimpan di dalam file. Apabila tidak dapat membaca PID, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+4. Membaca data PID daemon yang tersimpan di dalam file. Apabila tidak dapat membaca PID, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 fclose(pidfile);
 ```
-4. Menutup kembali file `/tmp/debugmon_[USER].pid` (pidfile).
+5. Menutup kembali file `/tmp/debugmon_[USER].pid` (pidfile).
 
 ```c
 if (kill(pid, SIGKILL) != 0) {
@@ -1117,7 +1125,7 @@ if (kill(pid, SIGKILL) != 0) {
         exit(EXIT_FAILURE);
 }
 ```
-5. Membunuh proses daemon yang berjalan sesuai dengan PID yang diberikan. Apabila gagal dalam membunuh daemon, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+6. Membunuh proses daemon yang berjalan sesuai dengan PID yang diberikan. Apabila gagal dalam membunuh daemon, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 if (remove(daemonPID) != 0) {
@@ -1128,7 +1136,7 @@ else {
 	printf("Daemon for %s stopped successfully\n", user);
 }
 ```
-6. Menghapus file `/tmp/debugmon_[USER].pid` spesifik untuk user yang menjadi target dari program. Apabila gagal dalam menghapus file, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user. Jika berhasil, maka program akan menampilkan output kalimat berhasil ke user.
+7. Menghapus file `/tmp/debugmon_[USER].pid` spesifik untuk user yang menjadi target dari program. Apabila gagal dalam menghapus file, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user. Jika berhasil, maka program akan menampilkan output kalimat berhasil ke user.
 
 ### • Soal 4.D: Fail User's System
 
@@ -1236,7 +1244,12 @@ void f_up_the_selected_user_system(const char *user) {
 Dimana langkah implementasinya:
 
 ```c
+void f_up_the_selected_user_system(const char *user) {
+	...
+}
 ```
+1. Mendeklarasikan `f_up_the_selected_user_system()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dipantau proses-proses yang sedang dijalankannya secara daemon.
 
 #### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
 
@@ -1265,8 +1278,12 @@ bool is_user_on_the_f_up_list(const char *user) {
 Dimana langkah implementasinya:
 
 ```c
-
+bool is_user_on_the_f_up_list(const char *user) {
+	...
+}
 ```
+1. Mendeklarasikan `is_user_on_the_f_up_list()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dipantau proses-proses yang sedang dijalankannya secara daemon.
 
 #### c. Soal 4.D.3: `user_cant_run_debugmon_no_more()`
 
