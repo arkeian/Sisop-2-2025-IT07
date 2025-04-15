@@ -14,7 +14,11 @@
 ### • Soal 1.D
 ### • Soal 1.E
 ### • Kendala Pengerjaan Soal
-## • Soal 2
+## • Soal 2 : Starterkit
+
+### • Pendahuluan
+
+Soal nomor 2 terdiri dari ......
 ### • Soal 2.A
 ### • Soal 2.B
 ### • Soal 2.C
