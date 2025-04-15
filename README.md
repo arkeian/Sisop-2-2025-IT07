@@ -230,7 +230,39 @@ Argumen tersebut untuk memindahkan file dari directory starter kit ke karantina.
 ```
 Argumen tersebut untuk memindahkan file dari directory karantina ke starter kit.
 ### • Soal 2.D
+Pada soal ini, kita ditugaskan untuk menambahkan fitur untuk menghapus seluruh file yang ada di dalam directory karantina. Berikut function yang digunakan :
+```c
+void eradicate_files() {
+    DIR *dir = opendir(QUARANTINE_DIR);
+    while ((entry = readdir(dir)) != NULL) {
+        if (entry->d_type != DT_REG) {
+            snprintf(path, ..., "%s/%s", QUARANTINE_DIR, entry->d_name);
+            remove(path);
+            write_log(...);
+        }
+    }
+    closedir(dir);
+}
+```
+Program tersebut akan menghapus semua file di dalam direktori quarantine secara permanen. Berikut argumen yang digunakan :
+```
+./starterkit --eradicate
+```
 ### • Soal 2.E
+Pada soal ini, kita akan membuat fitur untuk mematikan program decrypt nama file secara aman berdasarkan PID dari proses program. Function yang dipakai adalah sebagai berikut :
+```c
+void shutdown_daemon() {
+    FILE *fp = fopen(PID_FILE, "r");
+    fscanf(fp, "%d", &pid);
+    kill(pid, SIGTERM); // mengirim sinyal ke daemon
+    write_log(...);
+    remove(PID_FILE);
+}
+```
+Program akan menghentikan proses daemon dan PID dari proses disimpan di file starterkit.pid. Argumen yang digunakan untuk program tersebut adalah sebagai berikut :
+```
+./starterkit --shutdown
+```
 ### • Soal 2.F
 ### • Soal 2.G
 ### • Kendala Pengerjaan Soal
