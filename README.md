@@ -67,6 +67,53 @@ Baris-baris ini menjalankan tiga fungsi awal untuk:
 - Mengunduh file ZIP (starterkit.zip)
 - Mengekstraknya ke folder starter_kit
 - Menghapus file ZIP setelah berhasil diekstrak
+```c
+if (argc == 2 && strcmp(argv[1], "--decrypt") == 0) {
+    daemonize();
+    write_pid();
+    char msg[128];
+    snprintf(msg, sizeof(msg), "Successfully started decryption process with PID %d.", getpid());
+    write_log(msg);
+    daemon_loop();
+}
+```
+adalah blok kode yang akan dieksekusi jika argumen yang diberikan ke program adalah --decrypt. Function ini berkaitan langsung dengan subsoal A.
+```c
+} else if (argc == 2 && strcmp(argv[1], "--quarantine") == 0) {
+    quarantine_files();
+    exit(0);
+}
+```
+adalah untuk menangani argumen --quarantine yang berkaitan dengan Subsoal B, yaitu fitur karantina file berbahaya.
+```c
+} else if (argc == 2 && strcmp(argv[1], "--return") == 0) {
+    return_files();
+    exit(0);
+}
+```
+adalah pengondisian argumen dari program debugmon. Tujuannya adalah menangani perintah --return dari pengguna.
+```c
+} else if (argc == 2 && strcmp(argv[1], "--eradicate") == 0) {
+    eradicate_files();
+    exit(0);
+}
+```
+Bagian kode ini adalah pengondisian argumen untuk menangani perintah `--eradicate` dari pengguna. Tujuannya adalah menghapus permanen file yang sebelumnya telah dikarantina oleh program debugmon.
+```c
+} else if (argc == 2 && strcmp(argv[1], "--shutdown") == 0) {
+    shutdown_daemon();
+    exit(0);
+}
+```
+Bagian kode ini adalah percabangan yang akan dijalankan jika program debugmon dipanggil dengan argumen `--shutdown`. Tujuannya: menghentikan proses daemon debugmon yang sedang berjalan di latar belakang.
+```c
+} else {
+    fprintf(stderr, "[!] Invalid argument: %s\n", argv[1]);
+    print_usage();
+    return 1;
+}
+```
+Blok else ini berfungsi sebagai penjaga terakhir (fallback) untuk menangani input yang tidak dikenal, agar pengguna tidak menjalankan perintah yang salah tanpa disadari.
 
 ### • Soal 2.A
 ### • Soal 2.B
