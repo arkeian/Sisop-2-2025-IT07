@@ -179,6 +179,56 @@ Program menjalankan sebuah daemon (background process) untuk mendekripsi nama fi
 ./starterkit --decrypt
 ```
 ### • Soal 2.C
+Pada soal ini, kita ditugaskan untuk menambah fitur yang bisa untuk memindahkan file yang ada pada directory starter kit ke directory karantina, dan begitu juga sebaliknya. Berikut function yang diberikan :
+```c
+void move_files(const char *src_dir, const char *dst_dir) {
+    mkdir(dst_dir, 0755);
+
+    DIR *src = opendir(src_dir);
+    if (!src) {
+        fprintf(stderr, "[!] Source directory '%s' not found.\n", src_dir);
+        return;
+    }
+
+    struct dirent *entry;
+    char src_path[512], dst_path[512], log_msg[1024];
+
+    while ((entry = readdir(src)) != NULL) {
+        if (entry->d_type != DT_REG) continue;
+
+        snprintf(src_path, sizeof(src_path), "%s/%s", src_dir, entry->d_name);
+        snprintf(dst_path, sizeof(dst_path), "%s/%s", dst_dir, entry->d_name);
+
+        if (rename(src_path, dst_path) == 0) {
+            snprintf(log_msg, sizeof(log_msg),
+                     "%s - Successfully moved to %s directory.",
+                     entry->d_name,
+                     strcmp(dst_dir, QUARANTINE_DIR) == 0 ? "quarantine" : "starter kit");
+            write_log(log_msg);
+        }
+    }
+
+    closedir(src);
+}
+
+
+void quarantine_files() {
+    move_files(EXTRACT_DIR, QUARANTINE_DIR);
+}
+
+void return_files() {
+    move_files(QUARANTINE_DIR, EXTRACT_DIR);
+}
+```
+Program akan memindahkan file yang ada pada directory starter kit ke directory karantina, dan begitu juga sebaliknya. Untuk function ini, ada 2 argumen yang dipakai, yaitu untuk memindahkan file yang ada di directory `quarantine` ke directory `starterkit`, dan dari directory starterkit ke quarantine. Berikut `argument` yang digunakan :
+```
+./starterkit --quarantine
+```
+Argumen tersebut untuk memindahkan file dari directory starter kit ke karantina.
+```
+./starterkit --return
+```
+Argumen tersebut untuk memindahkan file dari directory karantina ke starter kit.
 ### • Soal 2.D
 ### • Soal 2.E
 ### • Soal 2.F
