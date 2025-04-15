@@ -55,6 +55,18 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 ```
+Dimana 
+```c
+printf("[*] Kanade's starter kit initializing...\n");
+download_zip();
+unzip_file();
+delete_zip();
+printf("[+] Starter kit setup complete.\n");
+```
+Baris-baris ini menjalankan tiga fungsi awal untuk:
+• Mengunduh file ZIP (starterkit.zip)
+• Mengekstraknya ke folder starter_kit
+• Menghapus file ZIP setelah berhasil diekstrak
 
 ### • Soal 2.A
 ### • Soal 2.B
