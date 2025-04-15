@@ -972,6 +972,74 @@ char state;
 - `command[]`: untuk menyimpan nama suatu proses.
 - `state`: untuk menyimpan status suatu proses, seperti running, idle, zombie, stopped, atau lainnya.
 
+```c
+time_t rawtime = time(NULL);
+struct tm *timeinfo = localtime(&rawtime);
+char currenttime[32];
+
+strftime(currenttime, sizeof(currenttime), "[%d-%m-%Y]-[%H:%M:%S]", timeinfo);
+```
+14. Mengambil data waktu lokal saat program dijalankan dan menyimpannya ke dalam variabel currenttime dalam format `[DD-MM-YYYY]-[HH:MM:SS]`.
+
+```c
+while ((entry = readdir(proc)) != NULL) {
+	if (!isdigit(entry->d_name[0])) {
+	continue;
+	}
+
+	...
+}
+```
+15. Membaca setiap nama file proses yang terdapat pada `/proc`, umumnya nama file proses hanya terdiri atas angka yang merepresentasikan PID-nya. Oleh karena itu, file lain yang bukan merupakan sebuah proses seperti `meminfo` dan `cpuinfo` akan dilewati. Selain itu, jika sudah tidak ada nama file lagi untuk dibaca maka, while-loop akan bernilai false dan loop akan berhenti.
+
+```c
+char procStatusPath[BUFFER2];
+snprintf(procStatusPath, sizeof(procStatusPath), "/proc/%s/status", entry->d_name);
+
+FILE *status = fopen(procStatusPath, "r");
+if (status == NULL) {
+	continue;
+}
+```
+16. Nama file untuk setiap proses yang telah dibaca kemudian disematkan ke dalam `/proc/[PID]/status` yang juga merupakan sebuah file. Setelah itu, setiap file `/proc/[PID]/status` dibuka untuk dibaca data seperti UID, memori yang dipakai, status, dan nama command setiap proses. Apabila file tidak dapat dibaca maka file akan dilewati.
+
+```c
+while (fgets(line, sizeof(line), status)) {
+	if (strncmp(line, "Uid:", 4) == 0) {
+		sscanf(line, "Uid:\t%d", &uid);
+	}
+	else if (strncmp(line, "Name:", 5) == 0) {
+		sscanf(line, "Name:\t%s", command);
+	}
+	else if (strncmp(line, "State:", 6) == 0) {
+		sscanf(line, "State:\t%c", &state);
+	}
+}
+```
+17. Membaca input dari `/proc/[PID]/status` dan mencari baris yang mempunyai prefix `UID:`, `Name:`, dan `State:`. Jika ditemukan, maka data UID, nama command, dan status suatu proses diambil dan disimpan ke dalam variabel yang berkaitan.
+
+```c
+fclose(status);
+```
+18. Menutup kembali file `/proc/[PID]/status`.
+
+```c
+if (uid == userUID && (state == 'R' || state == 'S')) {
+	fprintf(logfile, "%s_%s_STATUS(RUNNING)\n", currenttime, command);
+}
+```
+19. Memastikan bahwa UID proses yang ditemukan pada `/proc/[PID]/status` sesuai dengan UID user yang menjadi target dari program dan juga memastikan bahwa status proses yang ditemukan pada `/proc/[PID]/status` adalah antara `R` (running) atau `S` (sleeping). Jika kondisi tidak terpenuhi, maka proses tersebut akan dilewati.
+
+```c
+closedir(proc);
+```
+20. Menutup kembali direktori `/proc`.
+
+```c
+fclose(logfile);
+```
+21. Menutup kembali file `/tmp/debugmon_[USER].log` (logfile).
+
 ### • Soal 4.C: Stop Daemon
 ### • Soal 4.D: Fail User's System
 ### • Soal 4.E: Revert Failing
