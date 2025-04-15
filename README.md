@@ -1090,13 +1090,55 @@ if (pidfile == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-1. Membaca file yang dibuat oleh `run_daemon_to_log_user_activity()` pada folder `/tmp` dengan nama `debugmon_[USER].pid`, yang digunakan untuk menyimpan data PID daemon yang dijalankan untuk suatu user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].pid`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+1. Membuka file yang dibuat oleh `run_daemon_to_log_user_activity()` pada folder `/tmp` dengan nama `debugmon_[USER].pid`, yang digunakan untuk menyimpan data PID daemon yang dijalankan untuk suatu user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].pid`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 pid_t pid;
 ```
 2. Menyimpan data PID daemon yang diambil dari `/tmp/debugmon_[USER].pid` ke dalam variabel `pid`.
+
+```c
+if (fscanf(pidfile, "%d", &pid) != 1) {
+        fprintf(stderr, "Error: Failed to read PID from file\n");
+        fclose(pidfile);
+        exit(EXIT_FAILURE);
+}
+```
+3. Membaca data PID daemon yang tersimpan di dalam file. Apabila tidak dapat membaca PID, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+fclose(pidfile);
+```
+4. Menutup kembali file `/tmp/debugmon_[USER].pid` (pidfile).
+
+```c
+if (kill(pid, SIGKILL) != 0) {
+        fprintf(stderr, "Error: Failed to terminate daemon process\n");
+        exit(EXIT_FAILURE);
+}
+```
+5. Membunuh proses daemon yang berjalan sesuai dengan PID yang diberikan. Apabila gagal dalam membunuh daemon, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+if (remove(daemonPID) != 0) {
+fprintf(stderr, "Error: Failed to remove PID file\n");
+	exit(EXIT_FAILURE);
+}
+else {
+	printf("Daemon for %s stopped successfully\n", user);
+}
+```
+6. Menghapus file `/tmp/debugmon_[USER].pid` spesifik untuk user yang menjadi target dari program. Apabila gagal dalam menghapus file, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user. Jika berhasil, maka program akan menampilkan output kalimat berhasil ke user.
+
 ### • Soal 4.D: Fail User's System
+
+Pada subsoal 4.C: Fail User's System, kita diperintahkan untuk membuat sebuah program untuk menggagalkan dan mematikan semua proses yang sedang dijalankan oleh target user. Selain itu, program akan memblokir user untuk menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah empat function bernama `f_up_the_selected_user_system()`, `is_user_on_the_f_up_list()`, `user_cant_run_debugmon_no_more()`, dan `run_commands_using_execvp()` dengan tampilan sebagai berikut:
+
+#### a. Soal 4.D.1: `f_up_the_selected_user_system()`
+#### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
+#### c. Soal 4.D.3: `user_cant_run_debugmon_no_more()`
+#### d. Soal 4.D.4: `run_commands_using_execvp()`
+
 ### • Soal 4.E: Revert Failing
 ### • Soal 4.F: Debugmon Log File
 ### • Kendala Pengerjaan Soal
