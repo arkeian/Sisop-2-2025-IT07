@@ -18,12 +18,6 @@
 
 ### • Pendahuluan
 
-Berikut adalah pendahuluan yang kamu minta dengan gaya sesuai:
-
----
-
-## 📘 **Pendahuluan**
-
 Soal 2 terdiri dari enam subsoal, di mana subsoal A–E merupakan argumen dari `./starterkit`, dan subsoal F merupakan sistem logging aktivitas `starterkit`. Program ini dirancang untuk berjalan sebagai daemon yang memonitor direktori tertentu dan melakukan tindakan seperti karantina file terenkripsi, pengembalian file, penghapusan file permanen, serta penghentian proses daemon itu sendiri. Masing-masing argumen menjalankan fungsi spesifik yang diimplementasikan dalam bahasa pemrograman C dengan memanfaatkan fitur-fitur sistem operasi Linux seperti manajemen proses, direktori, sinyal, serta encoding dan decoding base64. Adapun tampilan 'main()' untuk dapat menjalankan argumen pada starterkit adalah sebagai berikut :
 
 	int main(int argc, char *argv[]) {
