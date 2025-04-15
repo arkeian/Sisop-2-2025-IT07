@@ -116,6 +116,35 @@ Bagian kode ini adalah percabangan yang akan dijalankan jika program debugmon di
 Blok else ini berfungsi sebagai penjaga terakhir (fallback) untuk menangani input yang tidak dikenal, agar pengguna tidak menjalankan perintah yang salah tanpa disadari.
 
 ### • Soal 2.A
+Pada soal sub bab 2.A, kita ditugaskan untuk membuat fitur untuk mendownload dan unzip sebuah starter kit berisi file - file acak (sudah termasuk virus) melalui link. Juga ada fitur untuk menghapus file zip asli setelah melakukan unzip. Function nya yaitu sebagai berikut :
+```c
+void download_zip() {
+    char *argv[] = {
+        "wget", "--no-check-certificate", "-q",
+        "-O", (char *)ZIP_FILE,
+        (char *)("https://drive.usercontent.google.com/u/0/uc?id=1_5GxIGfQr3mNKuavJbte_AoRkEQLXSKS&export=download"),
+        NULL
+    };
+    run_command(argv);
+}
+
+void unzip_file() {
+    char *mkdir_argv[] = { "mkdir", "-p", (char *)EXTRACT_DIR, NULL };
+    run_command(mkdir_argv);
+
+    char *unzip_argv[] = { "unzip", "-o", (char *)ZIP_FILE, "-d", (char *)EXTRACT_DIR, NULL };
+    run_command(unzip_argv);
+}
+
+void delete_zip() {
+    char *rm_argv[] = { "rm", "-f", (char *)ZIP_FILE, NULL };
+    run_command(rm_argv);
+}
+```
+Program akan mengunduh file ZIP dari internet, menyimpannya sebagai starterkit.zip, mengekstraknya ke direktori starter_kit, lalu menghapus file ZIP tersebut. Kemudian untuk menjalankan function tersebut, kita menggunakan command seperti berikut :
+```
+./starterkit
+```
 ### • Soal 2.B
 ### • Soal 2.C
 ### • Soal 2.D
