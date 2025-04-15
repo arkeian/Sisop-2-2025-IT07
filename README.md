@@ -18,7 +18,49 @@
 
 ### • Pendahuluan
 
-Soal nomor 2 terdiri dari ......
+Berikut adalah pendahuluan yang kamu minta dengan gaya sesuai:
+
+---
+
+## 📘 **Pendahuluan**
+
+Soal 2 terdiri dari enam subsoal, di mana subsoal A–E merupakan argumen dari `./starterkit`, dan subsoal F merupakan sistem logging aktivitas `starterkit`. Program ini dirancang untuk berjalan sebagai daemon yang memonitor direktori tertentu dan melakukan tindakan seperti karantina file terenkripsi, pengembalian file, penghapusan file permanen, serta penghentian proses daemon itu sendiri. Masing-masing argumen menjalankan fungsi spesifik yang diimplementasikan dalam bahasa pemrograman C dengan memanfaatkan fitur-fitur sistem operasi Linux seperti manajemen proses, direktori, sinyal, serta encoding dan decoding base64. Adapun tampilan 'main()' untuk dapat menjalankan argumen pada starterkit adalah sebagai berikut :
+
+	int main(int argc, char *argv[]) {
+	    printf("[*] Kanade's starter kit initializing...\n");
+	    download_zip();
+	    unzip_file();
+	    delete_zip();
+	    printf("[+] Starter kit setup complete.\n");
+	    if (argc == 2 && strcmp(argv[1], "--decrypt") == 0) {
+	        // daemonize();
+	        // write_pid();
+	        // daemon_loop(); // terus berjalan
+	        daemonize();
+	        write_pid();
+	        char msg[128];
+	        snprintf(msg, sizeof(msg), "Successfully started decryption process with PID %d.", getpid());
+	        write_log(msg);
+	        daemon_loop();
+	    
+	    } else if (argc == 2 && strcmp(argv[1], "--quarantine") == 0) {
+	        quarantine_files();
+	        exit(0);
+	    } else if (argc == 2 && strcmp(argv[1], "--return") == 0) {
+	        return_files();
+	        exit(0);
+	    }else if (argc == 2 && strcmp(argv[1], "--eradicate") == 0) {
+	        eradicate_files();
+	        exit(0);
+	    }else if (argc == 2 && strcmp(argv[1], "--shutdown") == 0) {
+	        shutdown_daemon();
+	        exit(0);
+	    }else {
+	        fprintf(stderr, "[!] Invalid argument: %s\n", argv[1]);
+	        print_usage();
+	        return 1;
+	    }
+
 ### • Soal 2.A
 ### • Soal 2.B
 ### • Soal 2.C
