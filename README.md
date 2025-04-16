@@ -1613,8 +1613,55 @@ snprintf(homedir, sizeof(homedir), "%s", pwd->pw_dir);
 char bashProfilePath[BUFFER3];
 snprintf(bashProfilePath, sizeof(bashProfilePath), "%s/.bash_profile", homedir);
 ```
-4. Data direktori `$HOME` yang telah dibaca dan disimpan pada variabel `homedir` kemudian disematkan ke dalam `[$HOME]/.bash_profile` yang merupakan sebuah file configuration script yang dijalankan secara otomatis setiap kali target user log in ke dalam `bash` shell. 
+4. Data direktori `$HOME` yang telah dibaca dan disimpan pada variabel `homedir` kemudian disematkan ke dalam `~/.bash_profile` yang merupakan sebuah file configuration script yang dijalankan secara otomatis setiap kali target user log in ke dalam `bash` shell. 
 
+```c
+char *argv1[] = {"cp", "/bin/bash", "/bin/rbash", NULL};
+run_commands_using_execvp("cp", argv1);
+```
+5. Menggandakan data yang ada pada file `/bin/bash` ke `/bin/rbash` yang merupakan versi lebih restriktif dari shell `bash`.
+
+```c
+char *argv2[] = {"usermod", "-s", "/bin/rbash", (char *)user, NULL};
+run_commands_using_execvp("usermod", argv2);
+```
+6. Memodifikasi shell yang digunakan oleh target user ke `/bin/rbash` sehingga target user tidak dapat melakukan hal seperti berpindah direktori.
+
+```c
+FILE *bashprofile = fopen(bashProfilePath, "w");
+if (bashprofile == NULL) {
+	fprintf(stderr, "Error: Unable to open bash profile\n");
+	exit(EXIT_FAILURE);
+}
+```
+7. Membuat file baru pada folder `$HOME` target user dengan nama `.bash_profile`. Jika sebelumnya file tersebut sudah ada, maka isinya akan di-overwrite. Selain itu, pabila tidak dapat membuka `~/.bash_profile`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+fprintf(bashprofile,
+	"# .bash_profile\n\n"
+	"if [ -f ~/.bashrc ]; then\n"
+	". ~/.bashrc\n"
+	"fi\n\n"
+	"readonly PATH=$HOME/programs\n"
+	"export PATH\n");
+```
+8. Mengubah output dari stdout ke `~/.bash_profile` dan menyimpan command dalam bentuk bash script di dalamnya, berupa script yang menjalankan file `~/.bashrc`, mengubah sehingga `$PATH` mengarah ke `~/programs`, dan membuat `~/programs` read only. Pada umumnya, `~/programs` bukan merupakan direktori yang ada pada target user secara default. `~/programs` digunakan untuk menyimpan command-command yang target user diperbolehkan untuk menjalankan. Namun karena hasil yang diharapkan adalah full restriction dimana target user tidak dapat menjalankan program apa-apa, `~/programs` dikosongkan.
+
+```c
+fclose(bashprofile);
+```
+9. Menutup kembali file `~/.bash_profile`.
+
+```c
+char *argv3[] = {"chattr", "+i", bashProfilePath, NULL};
+run_commands_using_execvp("chattr", argv3);
+```
+10. Membuat `~/.bash_profile` menjadi immutable yang menyebabkan target user bahkan root tidak dapat memodifikasi file tersebut.
+
+```c
+printf("%s has been blocked successfully\n", user);
+```
+11. Menampilkan output melalui stdout kepada user yang menjalankan program untuk menyatakan bahwa target user berhasil diblokir.
 
 #### e. Soal 4.D.5: `run_commands_using_execvp()`
 
