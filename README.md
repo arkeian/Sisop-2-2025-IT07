@@ -1141,7 +1141,7 @@ else {
 
 ### • Soal 4.D: Fail User's System
 
-Pada subsoal 4.C: Fail User's System, kita diperintahkan untuk membuat sebuah program untuk menggagalkan dan mematikan semua proses yang sedang dijalankan oleh target user. Selain itu, program akan memblokir user untuk menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah lima function bernama `f_up_the_selected_user_system()`, `is_user_on_the_f_up_list()`, `user_cant_run_debugmon_no_more()`, `user_cant_run_any_commands_no_more()`, dan `run_commands_using_execvp()`. Adapun penjelasan masing-masing fucntion adalah sebagai berikut:
+Pada subsoal 4.D: Fail User's System, kita diperintahkan untuk membuat sebuah program untuk menggagalkan dan mematikan semua proses yang sedang dijalankan oleh target user. Selain itu, program akan memblokir user untuk menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah lima function bernama `f_up_the_selected_user_system()`, `is_user_on_the_f_up_list()`, `user_cant_run_debugmon_no_more()`, `user_cant_run_any_commands_no_more()`, dan `run_commands_using_execvp()`. Adapun penjelasan masing-masing fucntion adalah sebagai berikut:
 
 #### a. Soal 4.D.1: `f_up_the_selected_user_system()`
 
@@ -1750,6 +1750,67 @@ else {
 6. Jika child process berhasil menjalankan prosesnya, maka parent process tidak akan melakukan apa-apa dan function `run_commands_using_execvp()` akan dinyatakan selesai. Namun, jika child process gagal menjalankan prosesnya, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ### • Soal 4.E: Revert Failing
+
+Pada subsoal 4.E: Revert Failing, kita diperintahkan untuk membuat sebuah program untuk mengangkat blokir yang telah diterapkan kepada suatu user, sehingga user dapat kembali menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah dua function bernama `un_user_cant_run_debugmon_no_more()` dan `un_user_cant_run_any_commands_no_more()`. Adapun penjelasan masing-masing fucntion adalah sebagai berikut:
+
+#### • a. Soal 4.E.1: `un_user_cant_run_debugmon_no_more()`
+
+Layaknya function `user_cant_run_debugmon_no_more()`, function `un_user_cant_run_debugmon_no_more()` juga merupakan function "deprecated" yang tugasnya telah digantikan oleh function lain yaitu `un_user_cant_run_any_commands_no_more()`. Function `un_user_cant_run_debugmon_no_more()` tetap dibiarkan berada pada program `debugmon` agar restriction yang telah diterapkan `user_cant_run_debugmon_no_more()` untuk target user dapat diangkat dan target user dapat kembali menjalankan program `debugmon`. Adapun tampilan function `un_user_cant_run_debugmon_no_more()` adalah sebagai berikut:
+
+```c
+void un_user_cant_run_debugmon_no_more(const char *user) {
+    FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "r");
+    if (blockedlist == NULL) {
+        fprintf(stderr, "Error: Unable to open blocked list file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    FILE *tmp = fopen("/tmp/debugmon_tmp.txt", "w");
+    if (tmp == NULL) {
+        fclose(blockedlist);
+        fprintf(stderr, "Error: Unable to open tmp file\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char line[BUFFER];
+    bool found = false;
+    while (fgets(line, sizeof(line), blockedlist)) {
+        line[strcspn(line, "\n")] = '\0';
+        if (strcmp(line, user) != 0) {
+            fprintf(tmp, "%s\n", line);
+        } else {
+            found = true;
+        }
+    }
+
+    fclose(blockedlist);
+    fclose(tmp);
+
+    if (found) {
+        remove("/tmp/debugmon_blocked.txt");
+        rename("/tmp/debugmon_tmp.txt", "/tmp/debugmon_blocked.txt");
+    }
+    else {
+        remove("/tmp/debugmon_blocked_tmp.txt");
+        fprintf(stderr, "%s is not in the blocked list\n", user);
+        exit(EXIT_FAILURE);
+    }
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+void un_user_cant_run_debugmon_no_more(const char *user) {
+	...
+}
+```
+1. Mendeklarasikan `un_user_cant_run_debugmon_no_more()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan diangkat restriction yang telah diterapkan pada function `user_cant_run_debugmon_no_more()`.
+
+#### • b. Soal 4.E.2: `un_user_cant_run_any_commands_no_more()`
+
+
 ### • Soal 4.F: Debugmon Log File
 ### • Kendala Pengerjaan Soal
 ## • Revisi
