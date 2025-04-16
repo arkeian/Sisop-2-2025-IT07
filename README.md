@@ -1276,7 +1276,7 @@ if (blockedlist == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-4. Membuat file baru pada folder `/tmp` dengan nama `debugmon_blocked.txt` untuk menyimpan data user yang sedang diblokir oleh program. Apabila tidak dapat membuka `/tmp/debugmon_blocked.txt`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+4. Membuka dan menambahkan data pada file dengan nama `/tmp/debugmon_blocked.txt` berupa data user yang sedang diblokir oleh program. Apabila tidak dapat membuka `/tmp/debugmon_blocked.txt`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 fprintf(blockedlist, "%s\n", user);
@@ -1308,7 +1308,7 @@ if (logfile == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-8. Membuka dan menambahkan data pada file `/tmp/debugmon_[USER].log` berupa data log proses yang telah dimatikan oleh program untuk target user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].log`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+8. Membuka dan menambahkan data pada file dengan nama `/tmp/debugmon_[USER].log` berupa data log proses yang telah dimatikan oleh program untuk target user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].log`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 DIR *proc = opendir("/proc");
@@ -1494,7 +1494,50 @@ void user_cant_run_debugmon_no_more(const char *user, const char *command) {
 Dimana langkah implementasinya:
 
 ```c
+void user_cant_run_debugmon_no_more(const char *user, const char *command) {
+	...
+}
 ```
+1. Mendeklarasikan `user_cant_run_debugmon_no_more()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dicatat percobaan (attempt) untuk menjalankan program `debugmon`.
+- `const char *command`: Nama command yang dijalankan oleh user yang diblokir untuk nantinya dicatat ke dalam `/tmp/debugmon_[USER].log`.
+
+```c
+char activityLogPath[BUFFER2];
+snprintf(activityLogPath, sizeof(activityLogPath), "/tmp/debugmon_%s.log", user);
+
+FILE *logfile = fopen(activityLogPath, "a");
+if (logfile == NULL) {
+	fprintf(stderr, "Error: Unable to open log file\n");
+	exit(EXIT_FAILURE);
+}
+```
+2. Membuka dan menambahkan data pada file dengan nama `/tmp/debugmon_[USER].log` berupa data log percobaan (attempt) target user dalam menjalankan program `debugmon`. Apabila tidak dapat membuka `/tmp/debugmon_[USER].log`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+time_t rawtime = time(NULL);
+struct tm *timeinfo = localtime(&rawtime);
+char currenttime[32];
+
+strftime(currenttime, sizeof(currenttime), "[%d-%m-%Y]-[%H:%M:%S]", timeinfo);
+```
+3. Mengambil data waktu lokal saat program dijalankan dan menyimpannya ke dalam variabel currenttime dalam format `[DD-MM-YYYY]-[HH:MM:SS]`.
+
+```c
+fprintf(logfile, "%s_./debugmon %s %s_STATUS(FAILED)\n", currenttime, command, user);
+```
+4. Mencatat semua percobaaan (attempt) user dalam menjalankan program `debugmon` ke dalam file `/tmp/debugmon_[USER].log` dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(FAILED)`.
+
+```c
+fclose(logfile);
+```
+5. Menutup kembali file `/tmp/debugmon_[USER].log` (logfile).
+
+```c
+fprintf(stderr, "Error: User is blocked from using this program\n");
+exit(EXIT_FAILURE);
+```
+6. Setelah user mencoba untuk menjalankan program `debugmon`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 #### d. Soal 4.D.4: `user_cant_run_any_commands_no_more()`
 
