@@ -1434,7 +1434,34 @@ bool is_user_on_the_f_up_list(const char *user) {
 }
 ```
 1. Mendeklarasikan `is_user_on_the_f_up_list()` dengan ketentuan:
-- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dipantau proses-proses yang sedang dijalankannya secara daemon.
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dipastikan izinnya untuk menjalankan program `debugmon`.
+
+```c
+FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "r");
+if (blockedlist == NULL) {
+	return false;
+}
+```
+2. Membuka file pada folder `/tmp` dengan nama `debugmon_blocked.txt` untuk mengambil data user yang sedang diblokir oleh program. Apabila tidak dapat membuka `/tmp/debugmon_blocked.txt`, maka function `is_user_on_the_f_up_list()` akan mengembalikan statement `false`.
+
+```c
+char line[BUFFER];
+```
+3. Mendeklarasikan variabel, dimana:
+- `line[]`: untuk menyimpan data satu baris penuh pada suatu file.
+
+```c
+while (fgets(line, sizeof(line), blockedlist)) {
+	line[strcspn(line, "\n")] = '\0';
+	if (strcmp(line, user) == 0) {
+		fclose(blockedlist);
+		return true;
+	}
+}
+fclose(blockedlist);
+return false;
+```
+4. Membaca input dari `/tmp/debugmon_blocked.txt` dan mencari baris yang sesuai dengan nama user. Jika ditemukan, maka file `/tmp/debugmon_blocked.txt` akan ditutup kembali dan function `is_user_on_the_f_up_list()` akan mengembalikan statement `true`. Jika tidak ditemukan, maka file `/tmp/debugmon_blocked.txt` akan ditutup kembali dan user dinyatakan tidak sedang diblokir oleh program. Setelah itu, function `is_user_on_the_f_up_list()` akan mengembalikan statement `false`.
 
 #### c. Soal 4.D.3: `user_cant_run_debugmon_no_more()`
 
