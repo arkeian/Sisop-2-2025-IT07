@@ -548,7 +548,7 @@ uid_t userUID = pwd->pw_uid;
 ```c
 FILE *meminfo = fopen("/proc/meminfo", "r");
 if (meminfo == NULL) {
-	fprintf (stderr, "Error: Unable to open the content of /proc/meminfo\n");
+	fprintf(stderr, "Error: Unable to open the content of /proc/meminfo\n");
 	exit(EXIT_FAILURE);
 }
 ```
@@ -575,7 +575,7 @@ fclose(meminfo);
 ```c
 DIR *proc = opendir("/proc");
 if (proc == NULL) {
-	fprintf (stderr, "Error: Unable to open folder /proc\n");
+	fprintf(stderr, "Error: Unable to open folder /proc\n");
 	exit(EXIT_FAILURE);
 }
 ```
@@ -1279,9 +1279,55 @@ if (blockedlist == NULL) {
 4. Membuat file baru pada folder `/tmp` dengan nama `debugmon_blocked.txt` untuk menyimpan data user yang sedang diblokir oleh program. Apabila tidak dapat membuka `/tmp/debugmon_blocked.txt`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
+fprintf(blockedlist, "%s\n", user);
+fclose(blockedlist);
+```
+5. Mengubah output dari stdout ke `/tmp/debugmon_blocked.txt` dan menyimpan data user yang diblokir di dalamnya. Setelah itu, menutup kembali file `/tmp/debugmon_blocked.txt`.
+
+```c
+char daemonPID[BUFFER];
+snprintf(daemonPID, sizeof(daemonPID), "/tmp/debugmon_%s.pid", user);
+if (access(daemonPID, F_OK) == 0) {
+	stop_daemon_to_log_user_activity(user);
+}
+```
+6. Membuka file pada folder `/tmp` dengan nama `debugmon_[USER].pid` untuk mengambil data PID daemon yang dijalankan target user. Apabila dapat membuka `/tmp/debugmon_[USER].pid`, maka program akan mematikan proses daemon yang dijalankan target user.
+
+```c
+uid_t userUID = pwd->pw_uid;
+```
+7. Menyimpan data UID user dari entry user yang disimpan pada `/etc/passwd` ke dalam variabel userUID.
+
+```c
+char activityLogPath[BUFFER2];
+snprintf(activityLogPath, sizeof(activityLogPath), "/tmp/debugmon_%s.log", user);
+
+FILE *logfile = fopen(activityLogPath, "a");
+if (logfile == NULL) {
+	fprintf(stderr, "Error: Unable to open log file\n");
+	exit(EXIT_FAILURE);
+}
+```
+8. Membuka dan menambahkan data pada file `/tmp/debugmon_[USER].log` berupa data log proses yang telah dimatikan oleh program untuk target user. Apabila tidak dapat membuka `/tmp/debugmon_[USER].log`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+DIR *proc = opendir("/proc");
+if (proc == NULL) {
+	fprintf (stderr, "Error: Unable to open folder /proc\n");
+	exit(EXIT_FAILURE);
+}
+```
+9. Membuka direktori `/proc` yang berisi file-file yang berhubungan dengan proses yang ada pada sistem user. Apabila tidak ditemukan atau tidak dapat membuka `/proc`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+struct dirent *entry;
+```
+10. Mendeklarasikan struct yang berisi directory entry untuk setiap file proses yang terdapat pada `/proc`.
+
+```c
 
 ```
-5. 
+11. 
 #### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
 
 ```c
