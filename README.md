@@ -1549,7 +1549,7 @@ exit(EXIT_FAILURE);
 
 #### d. Soal 4.D.4: `user_cant_run_any_commands_no_more()`
 
-Function `user_cant_run_any_commands_no_more()` merupakan function pengganti `user_cant_run_debugmon_no_more()` yang ditugaskan untuk menyelesaikan problem soal 4.D: Fail User's System yang baru: "Memblokir target user untuk menjalankan semua command pada sistem". Adapun fucntion `user_cant_run_debugmon_no_more()` memiliki tugas utama yaitu mengubah shell ke mode yang lebih restriktif, mengubah direktori `$PATH`, dan memodifikasi file yang berkaitan menjadi immutable atau read only. Adapun tampilan function `user_cant_run_any_commands_no_more()` adalah sebagai berikut:
+Function `user_cant_run_any_commands_no_more()` merupakan function pengganti `user_cant_run_debugmon_no_more()` yang ditugaskan untuk menyelesaikan problem soal 4.D: Fail User's System yang baru: "Memblokir target user untuk menjalankan semua command pada sistem". Adapun fucntion `user_cant_run_any_commands_no_more()` memiliki tugas utama yaitu mengubah shell ke mode yang lebih restriktif, mengubah direktori `$PATH` ke direktori kosong, dan memodifikasi file yang berkaitan menjadi immutable atau read only. Adapun tampilan function `user_cant_run_any_commands_no_more()` adalah sebagai berikut:
 
 ```c
 void user_cant_run_any_commands_no_more(char const *user) {
@@ -1872,6 +1872,130 @@ else {
 
 #### • b. Soal 4.E.2: `un_user_cant_run_any_commands_no_more()`
 
+Function `un_user_cant_run_any_commands_no_more()` merupakan function pengganti `un_user_cant_run_debugmon_no_more()`. Adapun fucntion `un_user_cant_run_any_commands_no_more()` memiliki tugas utama yaitu meng-reverse command yang telah dijalankan pada `user_cant_run_any_commands_no_more()` yaitu mengubah shell kembali ke mode yang lebih restriktif, mengubah direktori `$PATH` kembali ke direktori semula, dan menghapus status immutable atau read only file yang berkaitan. Adapun tampilan function `un_user_cant_run_any_commands_no_more()` adalah sebagai berikut:
+
+```c
+void un_user_cant_run_any_commands_no_more(char const *user) {
+    struct passwd *pwd = getpwnam(user);
+    if (pwd == NULL) {
+        fprintf(stderr, "Error: User does not exist\n");
+        exit(EXIT_FAILURE);
+    }
+
+    char homedir[BUFFER2];
+    snprintf(homedir, sizeof(homedir), "%s", pwd->pw_dir);
+
+    char bashProfilePath[BUFFER3];
+    snprintf(bashProfilePath, sizeof(bashProfilePath), "%s/.bash_profile", homedir);
+
+    char *argv1[] = {"chattr", "-i", bashProfilePath, NULL};
+    run_commands_using_execvp("chattr", argv1);
+
+
+    FILE *bashprofile = fopen(bashProfilePath, "w");
+    if (bashprofile == NULL) {
+        fprintf(stderr, "Error: Unable to open bash profile\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(bashprofile,
+            "# .bash_profile\n\n"
+            "if [ -f ~/.bashrc ]; then\n"
+            ". ~/.bashrc\n"
+            "fi\n\n"
+            "PATH=$PATH:$HOME/.local/bin:$HOME/bin\n"
+            "export PATH\n");
+    
+    fclose(bashprofile);
+
+    char *argv2[] = {"usermod", "-s", "/bin/bash", (char *)user, NULL};
+    run_commands_using_execvp("usermod", argv2);
+
+    char *argv3[] = {"rm", "/bin/rbash", NULL};
+    run_commands_using_execvp("rm", argv3);
+
+    printf("%s has been unblocked successfully\n", user);
+}
+```
+
+Dimana langkah implementasinya:
+
+```c
+void un_user_cant_run_any_commands_no_more(const char *user) {
+	...
+}
+```
+1. Mendeklarasikan `un_user_cant_run_any_commands_no_more()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dikembalikan izinnya untuk menjalankan command yang ada di dalam `$PATH` environment variable, termasuk menjalankan program `./debugmon`.
+
+```c
+struct passwd *pwd = getpwnam(user);
+if (pwd == NULL) {
+	fprintf(stderr, "Error: User does not exist\n");
+	exit(EXIT_FAILURE);
+}
+```
+2. Mendeklarasikan struct untuk entry user yang disimpan pada `/etc/passwd`. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+char homedir[BUFFER2];
+snprintf(homedir, sizeof(homedir), "%s", pwd->pw_dir);
+```
+3. Mengambil data direktori `$HOME` target user dari entry user yang disimpan pada `/etc/passwd` dan menyimpannya ke dalam variabel `homedir`.
+
+```c
+char bashProfilePath[BUFFER3];
+snprintf(bashProfilePath, sizeof(bashProfilePath), "%s/.bash_profile", homedir);
+```
+4. Data direktori `$HOME` yang telah dibaca dan disimpan pada variabel `homedir` kemudian disematkan ke dalam `~/.bash_profile` yang merupakan sebuah file configuration script yang dijalankan secara otomatis setiap kali target user log in ke dalam `bash` shell.
+
+```c
+char *argv1[] = {"chattr", "-i", bashProfilePath, NULL};
+run_commands_using_execvp("chattr", argv1);
+```
+5. Menghapus status immutable `~/.bash_profile`, sehingga root dan target user dapat kembali memodifikasi file tersebut.
+
+```c
+FILE *bashprofile = fopen(bashProfilePath, "w");
+if (bashprofile == NULL) {
+        fprintf(stderr, "Error: Unable to open bash profile\n");
+        exit(EXIT_FAILURE);
+}
+```
+6. Membuat file baru pada folder `$HOME` target user dengan nama `.bash_profile`. Jika sebelumnya file tersebut sudah ada, maka isinya akan di-overwrite. Selain itu, pabila tidak dapat membuka `~/.bash_profile`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+fprintf(bashprofile,
+	"# .bash_profile\n\n"
+	"if [ -f ~/.bashrc ]; then\n"
+	". ~/.bashrc\n"
+	"fi\n\n"
+	"PATH=$PATH:$HOME/.local/bin:$HOME/bin\n"
+	"export PATH\n");
+```
+7. Mengubah output dari stdout ke `~/.bash_profile` dan menyimpan command dalam bentuk bash script di dalamnya, berupa script yang menjalankan file `~/.bashrc`, serta mengubah sehingga `$PATH` mengarah kembali ke `~/.local/bin` dan `~/bin`.
+
+```c
+fclose(bashprofile);
+```
+8. Menutup kembali file `~/.bash_profile`.
+
+```c
+char *argv2[] = {"usermod", "-s", "/bin/bash", (char *)user, NULL};
+run_commands_using_execvp("usermod", argv2);
+```
+9. Memodifikasi shell yang digunakan oleh target user kembali ke `/bin/bash` dan target user bisa menjalankan command seperti mengubah direktori.
+
+```c
+char *argv3[] = {"rm", "/bin/rbash", NULL};
+run_commands_using_execvp("rm", argv3);
+```
+10. Menghapus file `/bin/rbash`.
+
+```c
+printf("%s has been unblocked successfully\n", user);
+```
+11. Menampilkan output melalui stdout kepada user yang menjalankan program untuk menyatakan bahwa target user berhasil diangkat blokirnya.
 
 ### • Soal 4.F: Debugmon Log File
 ### • Kendala Pengerjaan Soal
