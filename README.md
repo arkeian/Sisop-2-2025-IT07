@@ -274,6 +274,7 @@ Program akan menghentikan proses daemon dan PID dari proses disimpan di file sta
 ### • Pendahuluan
 
 Soal 4 terdiri dari enam subsoal, dimana subsoal A-E merupakan argumen dari `./debugmon` dan subsoal F merupakan sistem logging aktivitas debugmon. Adapun tampilan `main()` untuk dapat menjalankan argumen pada debugmon adalah sebagai berikut:
+
 ```c
 int main(int argc, char *argv[]) {
     if (argc < 3) {
@@ -319,14 +320,14 @@ int main(int argc, char *argv[]) {
     exit(EXIT_SUCCESS);
 }
 ```
-Dimana:
+Dimana langkah implementasinya:
 
 ```c
 int main(int argc, char *argv[]) {
 	...
 }
 ```
-Merupakan deklarasi `main()` dengan ketentuan:
+1. Merupakan deklarasi `main()` dengan ketentuan:
 - `int argc`: Jumlah argumen yang perlu di-passing ke dalam program.
 - `char *argv[]`: Array yang berisi argumen-argumen yang di-passing ke dalam program.
 
@@ -340,15 +341,15 @@ else if (argc > 3) {
 	exit(EXIT_FAILURE);
 }
 ```
-Memastikan bahwa jumlah argumen yang di-passing ke dalam program tidak lebih dan tidak kurang jumlahnya dari 3. Apabila hal tersebut terjadi, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+2. Memastikan bahwa jumlah argumen yang di-passing ke dalam program tidak lebih dan tidak kurang jumlahnya dari 3. Apabila hal tersebut terjadi, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 const char *command = argv[1];
 const char *user = argv[2];
 ```
-Mendeklarasikan variabel yang merupakan tipe data char dengan sifat konstan (tidak bisa dirubah), dimana:
-- `const char *command = argv[1];`: Mendeklarasikan variabel untuk menyimpan opsi debugmon yang hendak dijalankan berdasarkan argumen kedua yang di-passing ke dalam program.
-- `const char *user = argv[2];`: Mendeklarasikan variabel untuk menyimpan user yang akan menjadi target opsi debugmon berdasarkan argumen ketiga yang di-passing ke dalam program.
+3. Mendeklarasikan variabel yang merupakan tipe data char dengan sifat konstan (tidak bisa dirubah), dimana:
+- `const char *command = argv[1];`: variabel untuk menyimpan opsi debugmon yang hendak dijalankan berdasarkan argumen kedua yang di-passing ke dalam program.
+- `const char *user = argv[2];`: variabel untuk menyimpan user yang akan menjadi target opsi debugmon berdasarkan argumen ketiga yang di-passing ke dalam program.
   
 Argumen pertama pada program ini tidak digunakan karena berisi nama program yang dijalankan, yaitu `./debugmon`. 
 
@@ -359,7 +360,7 @@ if (is_user_on_the_f_up_list(user)) {
 	}
 }
 ```
-Merupakan bagian dari subsoal 4.D: Fail User's System, dimana program memastikan apakah user memiliki akses untuk menjalankan program debugmon.
+4. Merupakan bagian dari subsoal 4.D: Fail User's System, dimana program memastikan apakah user memiliki akses untuk menjalankan program debugmon.
 
 ```c
 if (!strcmp(command, "list")) {
@@ -384,12 +385,12 @@ else {
 	exit(EXIT_FAILURE);
 }
 ```
-Memeriksa value variabel `command` dan mengarahkannya ke cabang yang sesuai dan menjalankan function yang berkaitan. Apabila value command tidak dikenal, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+5. Memeriksa value variabel `command` dan mengarahkannya ke cabang yang sesuai dan menjalankan function yang berkaitan. Apabila value command tidak dikenal, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 exit(EXIT_SUCCESS);
 ```
-Setelah function yang berkaitan berhasil dijalankan tanpa kendala, maka program dinyatakan berhasil dieksekusi dan keluar.
+6. Setelah function yang berkaitan berhasil dijalankan tanpa kendala, maka program dinyatakan berhasil dieksekusi dan keluar.
 
 ### • Soal 4.A: List User's Processes
 
