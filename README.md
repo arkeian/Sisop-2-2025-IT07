@@ -542,7 +542,7 @@ if (pwd == NULL) {
 } 
 uid_t userUID = pwd->pw_uid;
 ```
-2. Mengambil data UID user dari entry user yang disimpan pada `/etc/passwd` dan menyimpannya ke dalam variabel userUID. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+2. Mengambil data UID user dari entry user yang disimpan pada `/etc/passwd` dan menyimpannya ke dalam variabel userUID. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 FILE *meminfo = fopen("/proc/meminfo", "r");
@@ -551,7 +551,7 @@ if (meminfo == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-3. Membuka file `/proc/meminfo` untuk membaca data jumlah memori total yang terdapat pada perangkat yang menjalankan program debugmon. Apabila tidak ditemukan atau tidak dapat membuka `/proc/meminfo`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+3. Membuka file `/proc/meminfo` untuk membaca data jumlah memori total yang terdapat pada perangkat yang menjalankan program debugmon. Apabila tidak ditemukan atau tidak dapat membuka `/proc/meminfo`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 char line[BUFFER];
@@ -578,7 +578,7 @@ if (proc == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-6. Membuka direktori `/proc` yang berisi file-file yang berhubungan dengan proses yang ada pada sistem user. Apabila tidak ditemukan atau tidak dapat membuka `/proc`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+6. Membuka direktori `/proc` yang berisi file-file yang berhubungan dengan proses yang ada pada sistem user. Apabila tidak ditemukan atau tidak dapat membuka `/proc`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 struct dirent *entry;
@@ -925,7 +925,7 @@ if (pwd == NULL) {
 } 
 uid_t userUID = pwd->pw_uid;
 ```
-8. Mengambil data UID user dari entry user yang disimpan pada `/etc/passwd` dan menyimpannya ke dalam variabel userUID. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+8. Mengambil data UID user dari entry user yang disimpan pada `/etc/passwd` dan menyimpannya ke dalam variabel userUID. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 while (1) {
@@ -954,7 +954,7 @@ if (proc == NULL) {
 	exit(EXIT_FAILURE);
 }
 ```
-11. Membuka direktori `/proc` yang berisi file-file yang berhubungan dengan proses yang ada pada sistem user. Apabila tidak ditemukan atau tidak dapat membuka `/proc`,  maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+11. Membuka direktori `/proc` yang berisi file-file yang berhubungan dengan proses yang ada pada sistem user. Apabila tidak ditemukan atau tidak dapat membuka `/proc`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 ```c
 struct dirent *entry;
@@ -1028,7 +1028,7 @@ if (uid == userUID && (state == 'R' || state == 'S')) {
 	fprintf(logfile, "%s_%s_STATUS(RUNNING)\n", currenttime, command);
 }
 ```
-19. Memastikan bahwa UID proses yang ditemukan pada `/proc/[PID]/status` sesuai dengan UID user yang menjadi target dari program dan juga memastikan bahwa status proses yang ditemukan pada `/proc/[PID]/status` adalah antara `R` (running) atau `S` (sleeping). Jika kondisi tidak terpenuhi, maka proses tersebut akan dilewati.
+19. Memastikan bahwa UID proses yang ditemukan pada `/proc/[PID]/status` sesuai dengan UID user yang menjadi target dari program dan juga memastikan bahwa status proses yang ditemukan pada `/proc/[PID]/status` adalah antara `R` (running) atau `S` (sleeping). Jika kondisi tidak terpenuhi, maka proses tersebut akan dilewati. Jika terpenuhi, maka proses akan dimasukkan ke dalam file `/tmp/debugmon_[USER].log` dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(RUNNING)`.
 
 ```c
 closedir(proc);
@@ -1249,8 +1249,38 @@ void f_up_the_selected_user_system(const char *user) {
 }
 ```
 1. Mendeklarasikan `f_up_the_selected_user_system()` dengan ketentuan:
-- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan dipantau proses-proses yang sedang dijalankannya secara daemon.
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan digagalkan proses yang sedang dijalankan di sistemnya.
 
+```c
+struct passwd *pwd = getpwnam(user);
+if (pwd == NULL) {
+	fprintf(stderr, "Error: User does not exist\n");
+	exit(EXIT_FAILURE);
+}
+```
+2. Mendeklarasikan struct untuk entry user yang disimpan pada `/etc/passwd`. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+if (is_user_on_the_f_up_list(user)) {
+        fprintf(stderr, "Error: User is already prevented from using any commands. Have mercy\n");
+        exit(EXIT_FAILURE);
+}
+```
+3. Memastikan bahwa target user sudah diblokir sebelumnya dengan menjalankan program yang sama. Apabila sudah, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "a");
+if (blockedlist == NULL) {
+	fprintf(stderr, "Error: Unable to open blocked list file\n");
+	exit(EXIT_FAILURE);
+}
+```
+4. Membuat file baru pada folder `/tmp` dengan nama `debugmon_blocked.txt` untuk menyimpan data user yang sedang diblokir oleh program. Apabila tidak dapat membuka `/tmp/debugmon_blocked.txt`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+
+```
+5. 
 #### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
 
 ```c
