@@ -1618,7 +1618,51 @@ void run_commands_using_execvp(const char *command, char *const argv[]) {
 Dimana langkah implementasinya:
 
 ```c
+void run_commands_using_execvp(const char *command, char *const argv[]) {
+	...
+}
 ```
+1. Mendeklarasikan `run_commands_using_execvp()` dengan ketentuan:
+- `const char *command`: Nama command yang nantinya akan dijalankan oleh `execvp()`.
+- `char *const argv[]`: Argumen-argumen yang akan di-passing ke command yang nantinya akan dijalankan oleh `execvp()`.
+
+```c
+pid_t pid = fork();
+if (pid == -1) {
+	exit(EXIT_FAILURE);
+}
+```
+2. Membuat sebuah child process menggunakan `fork()` dan memastikan bahwa child process berhasil dibuat. Apabila tidak, maka program akan keluar.
+
+```c
+if (pid == 0) {
+	execvp(command, argv);
+	fprintf(stderr, "Error: Unable to execute execvp command\n");
+	exit(EXIT_FAILURE);
+}
+```
+3. Child process akan menjalankan command dengan menggunakan `execvp()`. Umumnya, setelah menjalankan `execvp()` kode pada baris dibawahnya tidak akan dijalankan. Namun, jika `execvp()` gagal dijalankan, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+int status;
+```
+4. Mendeklarasikan variabel, dimana:
+- `status`: untuk menyimpan data status berhasil atau gagalnya child process.
+
+```c
+wait(&status);
+```
+5. Menunggu child process selesai dijalankan dan kemudian menyimpan data berhasil atau gagalnya child process ke dalam variabel `status`.
+
+```c
+if (WIFEXITED(status)) {}
+else {
+	fprintf(stderr, "Error: Child process terminated abnormally\n");
+	exit(EXIT_FAILURE); 
+}
+```
+6. Jika child process berhasil menjalankan prosesnya, maka parent process tidak akan melakukan apa-apa dan function `run_commands_using_execvp()` akan dinyatakan selesai. Namun, jika child process gagal menjalankan prosesnya, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
 ### • Soal 4.E: Revert Failing
 ### • Soal 4.F: Debugmon Log File
 ### • Kendala Pengerjaan Soal
