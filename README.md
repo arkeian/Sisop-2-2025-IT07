@@ -1808,6 +1808,68 @@ void un_user_cant_run_debugmon_no_more(const char *user) {
 1. Mendeklarasikan `un_user_cant_run_debugmon_no_more()` dengan ketentuan:
 - `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan diangkat restriction yang telah diterapkan pada function `user_cant_run_debugmon_no_more()`.
 
+```c
+FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "r");
+if (blockedlist == NULL) {
+	fprintf(stderr, "Error: Unable to open blocked list file\n");
+	exit(EXIT_FAILURE);
+}
+```
+2. Membuka file pada folder `/tmp` dengan nama `debugmon_blocked.txt` untuk mengambil data user yang sedang diblokir oleh program. Apabila tidak dapat membuka `/tmp/debugmon_blocked.txt`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+FILE *tmp = fopen("/tmp/debugmon_tmp.txt", "w");
+if (tmp == NULL) {
+	fclose(blockedlist);
+	fprintf(stderr, "Error: Unable to open tmp file\n");
+	exit(EXIT_FAILURE);
+}
+```
+3. Membuat file sementara baru pada folder `/tmp` dengan nama `debugmon_tmp.txt` agar penghapusan target user dari daftar blokir dapat dilakukan tanpa kehilangan data user lain yang juga ada pada file `/tmp/debugmon_blocked.txt`. Apabila tidak dapat membuka `/tmp/debugmon_tmp.txt`, maka file `/tmp/debugmon_blocked.txt` akan ditutup dan program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+char line[BUFFER];
+bool found = false;
+```
+4. Mendeklarasikan variabel-variabel, dimana:
+- `line[]`: untuk menyimpan data satu baris penuh pada suatu file.
+- `found`: untuk menyimpan data apakah target user ditemukan pada file `/tmp/debugmon_tmp.txt`.
+
+```c
+while (fgets(line, sizeof(line), blockedlist)) {
+	line[strcspn(line, "\n")] = '\0';
+	if (strcmp(line, user) != 0) {
+    		fprintf(tmp, "%s\n", line);
+	} else {
+    		found = true;
+	}
+}
+```
+5. Membaca input dari `/tmp/debugmon_blocked.txt` dan mencari baris yang sesuai dengan nama user. Jika ditemukan, maka variabel `found` akan diperbarui menjadi `true`. Jika tidak ditemukan, maka mengubah output dari stdout ke `/tmp/debugmon_tmp.txt` dan menyimpan user lain yang bukan target dari program ke dalamnya.
+
+```c
+fclose(blockedlist);
+```
+6. Menutup kembali file `/tmp/debugmon_blocked.txt`.
+
+```c
+fclose(tmp);
+```
+7. Menutup kembali file `/tmp/debugmon_tmp.txt`.
+
+```c
+if (found) {
+        remove("/tmp/debugmon_blocked.txt");
+        rename("/tmp/debugmon_tmp.txt", "/tmp/debugmon_blocked.txt");
+}
+else {
+	remove("/tmp/debugmon_blocked_tmp.txt");
+	fprintf(stderr, "%s is not in the blocked list\n", user);
+	exit(EXIT_FAILURE);
+}
+```
+8. Jika target user ditemukan pada `/tmp/debugmon_blocked.txt`, maka file `/tmp/debugmon_blocked.txt` akan diperbarui untuk menghapus nama user di dalamnya. Jika tidak, maka file `/tmp/debugmon_blocked_tmp.txt` akan dihapus dan program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
 #### • b. Soal 4.E.2: `un_user_cant_run_any_commands_no_more()`
 
 
