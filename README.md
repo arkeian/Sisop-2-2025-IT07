@@ -1587,7 +1587,34 @@ void user_cant_run_any_commands_no_more(char const *user) {
 Dimana langkah implementasinya:
 
 ```c
+void user_cant_run_any_commands_no_more(char const *user) {
+	...
+}
 ```
+1. Mendeklarasikan `user_cant_run_any_commands_no_more()` dengan ketentuan:
+- `const char *user`: Nama user yang di-passing dari `main()` yang nantinya akan diblokir untuk menjalankan command yang ada pada `$PATH` environment variable.
+
+```c
+struct passwd *pwd = getpwnam(user);
+if (pwd == NULL) {
+	fprintf(stderr, "Error: User does not exist\n");
+	exit(EXIT_FAILURE);
+}
+```
+2. Mendeklarasikan struct untuk entry user yang disimpan pada `/etc/passwd`. Apabila tidak ditemukan user yang sesuai pada `/etc/passwd`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
+
+```c
+char homedir[BUFFER2];
+snprintf(homedir, sizeof(homedir), "%s", pwd->pw_dir);
+```
+3. Mengambil data direktori `$HOME` target user dari entry user yang disimpan pada `/etc/passwd` dan menyimpannya ke dalam variabel `homedir`.
+
+```c
+char bashProfilePath[BUFFER3];
+snprintf(bashProfilePath, sizeof(bashProfilePath), "%s/.bash_profile", homedir);
+```
+4. Data direktori `$HOME` yang telah dibaca dan disimpan pada variabel `homedir` kemudian disematkan ke dalam `[$HOME]/.bash_profile` yang merupakan sebuah file configuration script yang dijalankan secara otomatis setiap kali target user log in ke dalam `bash` shell. 
+
 
 #### e. Soal 4.D.5: `run_commands_using_execvp()`
 
