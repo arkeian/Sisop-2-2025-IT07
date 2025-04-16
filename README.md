@@ -1141,9 +1141,11 @@ else {
 
 ### • Soal 4.D: Fail User's System
 
-Pada subsoal 4.C: Fail User's System, kita diperintahkan untuk membuat sebuah program untuk menggagalkan dan mematikan semua proses yang sedang dijalankan oleh target user. Selain itu, program akan memblokir user untuk menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah lima function bernama `f_up_the_selected_user_system()`, `is_user_on_the_f_up_list()`, `user_cant_run_debugmon_no_more()`, `user_cant_run_any_commands_no_more()`, dan `run_commands_using_execvp()` dengan tampilan sebagai berikut:
+Pada subsoal 4.C: Fail User's System, kita diperintahkan untuk membuat sebuah program untuk menggagalkan dan mematikan semua proses yang sedang dijalankan oleh target user. Selain itu, program akan memblokir user untuk menjalankan command apapun termasuk menjalankan program `debugmon` ini. Untuk membuat program ini dibuatlah lima function bernama `f_up_the_selected_user_system()`, `is_user_on_the_f_up_list()`, `user_cant_run_debugmon_no_more()`, `user_cant_run_any_commands_no_more()`, dan `run_commands_using_execvp()`. Adapun penjelasan masing-masing fucntion adalah sebagai berikut:
 
 #### a. Soal 4.D.1: `f_up_the_selected_user_system()`
+
+Function `f_up_the_selected_user_system()` memiliki tugas utama yaitu menambahkan target user ke daftar user yang sedang diblokir pada `/tmp/debugmon_blocked.txt`, mematikan daemon `debugmon` yang dijalankan oleh target user (jika ada), mematikan secara paksa semua proses yang sedang dijalankan oleh target user, dan mencatat proses-proses yang telah dimatikan ke dalam `/tmp/debugmon_[USER].log`. Adapun tampilan function `f_up_the_selected_user_system()` adalah sebagai berikut:
 
 ```c
 void f_up_the_selected_user_system(const char *user) {
@@ -1404,6 +1406,8 @@ fclose(logfile);
 
 #### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
 
+Function `is_user_on_the_f_up_list()` memiliki tugas utama yaitu memastikan apakah user memiliki hak akses untuk menjalankan program `debugmon`. Secara teknis, user yang telah diblokir masih bisa menjalankan program `debugmon` (jika entah bagaimana berhasil melewati restriction yang telah diimplementasikan di function `user_cant_run_any_commands_no_more()`) namun program akan secara langsung keluar dengan gagal sebelum user bisa menjalankan program `debugmon` apapun. Adapun tampilan function `is_user_on_the_f_up_list()` adalah sebagai berikut:
+
 ```c
 bool is_user_on_the_f_up_list(const char *user) {
     FILE *blockedlist = fopen("/tmp/debugmon_blocked.txt", "r");
@@ -1464,6 +1468,10 @@ return false;
 4. Membaca input dari `/tmp/debugmon_blocked.txt` dan mencari baris yang sesuai dengan nama user. Jika ditemukan, maka file `/tmp/debugmon_blocked.txt` akan ditutup kembali dan function `is_user_on_the_f_up_list()` akan mengembalikan statement `true`. Jika tidak ditemukan, maka file `/tmp/debugmon_blocked.txt` akan ditutup kembali dan user dinyatakan tidak sedang diblokir oleh program. Setelah itu, function `is_user_on_the_f_up_list()` akan mengembalikan statement `false`.
 
 #### c. Soal 4.D.3: `user_cant_run_debugmon_no_more()`
+
+Function `user_cant_run_debugmon_no_more()` merupakan function "deprecated" dimana pada status program saat ini sebenarnya tidak begitu dibutuhkan. Pada awalnya, function ini ditujukan untuk menyelesaikan problem soal 4.D: Fail User's System yang mengangkat masalah "Memblokir target user untuk menjalankan program `debugmon`". Namun karena problem soal diubah menjadi "Memblokir target user untuk menjalankan semua command pada sistem", otomatis dengan menerapkan itu, `./debugmon` juga tidak dapat dijalankan.  
+  
+Function `user_cant_run_debugmon_no_more()` tetap dibiarkan berada pada program `debugmon` dan bisa berjalan dengan alasan sebagai safeguard saat kondisi target user entah bagaimana berhasil melewati restriction yang telah diimplementasikan terhadapnya. Selain itu, function ini menyebabkan konsekuensi yaitu memblokir program `debugmon` untuk target user meskipun program dijalankan oleh user lain. Adapun tampilan function `user_cant_run_debugmon_no_more()` adalah sebagai berikut:
 
 ```c
 void user_cant_run_debugmon_no_more(const char *user, const char *command) {
@@ -1540,6 +1548,8 @@ exit(EXIT_FAILURE);
 6. Setelah user mencoba untuk menjalankan program `debugmon`, maka program akan keluar setelah melempar sebuah error ke stderr yang akan ditampilkan ke user.
 
 #### d. Soal 4.D.4: `user_cant_run_any_commands_no_more()`
+
+Function `user_cant_run_any_commands_no_more()` merupakan function pengganti `user_cant_run_debugmon_no_more()` yang ditugaskan untuk menyelesaikan problem soal 4.D: Fail User's System yang baru: "Memblokir target user untuk menjalankan semua command pada sistem". Adapun fucntion `user_cant_run_debugmon_no_more()` memiliki tugas utama yaitu mengubah shell ke mode yang lebih restriktif, mengubah direktori `$PATH`, dan memodifikasi file yang berkaitan menjadi immutable atau read only. Adapun tampilan function `user_cant_run_any_commands_no_more()` adalah sebagai berikut:
 
 ```c
 void user_cant_run_any_commands_no_more(char const *user) {
@@ -1664,6 +1674,8 @@ printf("%s has been blocked successfully\n", user);
 11. Menampilkan output melalui stdout kepada user yang menjalankan program untuk menyatakan bahwa target user berhasil diblokir.
 
 #### e. Soal 4.D.5: `run_commands_using_execvp()`
+
+Function `run_commands_using_execvp()` memiliki tugas utama yaitu menjalankan command yang diberikan kepadanya dengan `execvp()`. Adapun tampilan function `run_commands_using_execvp()` adalah sebagai berikut:
 
 ```c
 void run_commands_using_execvp(const char *command, char *const argv[]) {
