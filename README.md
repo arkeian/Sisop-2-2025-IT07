@@ -1029,7 +1029,7 @@ if (uid == userUID && (state == 'R' || state == 'S')) {
 	fprintf(logfile, "%s_%s_STATUS(RUNNING)\n", currenttime, command);
 }
 ```
-19. Memastikan bahwa UID proses yang ditemukan pada `/proc/[PID]/status` sesuai dengan UID user yang menjadi target dari program dan juga memastikan bahwa status proses yang ditemukan pada `/proc/[PID]/status` adalah antara `R` (running) atau `S` (sleeping). Jika kondisi tidak terpenuhi, maka proses tersebut akan dilewati. Jika terpenuhi, maka proses akan dimasukkan ke dalam file `/tmp/debugmon_[USER].log` dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(RUNNING)`.
+19. Memastikan bahwa UID proses yang ditemukan pada `/proc/[PID]/status` sesuai dengan UID user yang menjadi target dari program dan juga memastikan bahwa status proses yang ditemukan pada `/proc/[PID]/status` adalah antara `R` (running) atau `S` (sleeping). Jika kondisi tidak terpenuhi, maka proses tersebut akan dilewati. Jika terpenuhi, maka proses akan dicatat ke dalam file `/tmp/debugmon_[USER].log` dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(RUNNING)`.
 
 ```c
 closedir(proc);
@@ -1325,9 +1325,83 @@ struct dirent *entry;
 10. Mendeklarasikan struct yang berisi directory entry untuk setiap file proses yang terdapat pada `/proc`.
 
 ```c
-
+uid_t uid;
+char line[BUFFER], command[BUFFER];
 ```
-11. 
+11. Mendeklarasikan variabel-variabel, dimana:
+- `uid`: untuk menyimpan data UID suatu proses.
+- `line[]`: untuk menyimpan data satu baris penuh pada suatu file.
+- `command[]`: untuk menyimpan nama suatu proses.
+
+```c
+time_t rawtime = time(NULL);
+struct tm *timeinfo = localtime(&rawtime);
+char currenttime[32];
+
+strftime(currenttime, sizeof(currenttime), "[%d-%m-%Y]-[%H:%M:%S]", timeinfo);
+```
+12. Mengambil data waktu lokal saat program dijalankan dan menyimpannya ke dalam variabel currenttime dalam format `[DD-MM-YYYY]-[HH:MM:SS]`.
+
+```c
+while ((entry = readdir(proc)) != NULL) {
+	if (!isdigit(entry->d_name[0])) {
+		continue;
+	}
+
+	...
+}
+```
+13. Membaca setiap nama file proses yang terdapat pada `/proc`, umumnya nama file proses hanya terdiri atas angka yang merepresentasikan PID-nya. Oleh karena itu, file lain yang bukan merupakan sebuah proses seperti `meminfo` dan `cpuinfo` akan dilewati. Selain itu, jika sudah tidak ada nama file lagi untuk dibaca maka, while-loop akan bernilai false dan loop akan berhenti.
+
+```c
+char procStatusPath[BUFFER2];
+snprintf(procStatusPath, sizeof(procStatusPath), "/proc/%s/status", entry->d_name);
+
+FILE *status = fopen(procStatusPath, "r");
+if (status == NULL) {
+	continue;
+}
+```
+14.  Nama file untuk setiap proses yang telah dibaca kemudian disematkan ke dalam `/proc/[PID]/status` yang juga merupakan sebuah file. Setelah itu, setiap file `/proc/[PID]/status` dibuka untuk dibaca data seperti UID dan nama command setiap proses. Apabila file tidak dapat dibaca maka file akan dilewati.
+
+```c
+while (fgets(line, sizeof(line), status)) {
+	if (strncmp(line, "Uid:", 4) == 0) {
+		sscanf(line, "Uid:\t%d", &uid);
+	}
+	else if (strncmp(line, "Name:", 5) == 0) {
+		sscanf(line, "Name:\t%s", command);
+	}
+}
+```
+15. Membaca input dari `/proc/[PID]/status` dan mencari baris yang mempunyai prefix `UID:` dan `Name:`. Jika ditemukan, maka data UID dan nama command suatu proses diambil dan disimpan ke dalam variabel yang berkaitan.
+
+```c
+fclose(status);
+```
+16. Menutup kembali file `/proc/[PID]/status`.
+
+```c
+if (uid == userUID) {
+	pid_t pid = atoi(entry->d_name);
+	if (pid > 0 && kill(pid, SIGKILL) == 0) {
+	    printf("Killed process PID: %d\n", pid);
+	    fprintf(logfile, "%s_%s_STATUS(FAILED)\n", currenttime, command);
+	}
+}
+```
+17. Mematikan setiap proses yang sedang dijalankan target user menggunakan sinyal SIGKILL. Jika berhasil, maka proses akan dicatat ke dalam file `/tmp/debugmon_[USER].log` dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(FAILED)`.
+
+```c
+closedir(proc);
+```
+18. Menutup kembali direktori `/proc`.
+
+```c
+fclose(logfile);
+```
+19. Menutup kembali file `/tmp/debugmon_[USER].log` (logfile).
+
 #### b. Soal 4.D.2: `is_user_on_the_f_up_list()`
 
 ```c
