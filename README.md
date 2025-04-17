@@ -69,6 +69,208 @@ Berikut contoh struktur directory akhir:
 
 Notes: Berikan error handling yakni memberi tahu command yang benar jika salah argumen.
 
+### LANGKAH LANGKAH PENGERJAAN
+
+### A
+Pertama,pada action.c kita membuat program agar bisa melakukan download [Clues.zip](https://drive.google.com/file/d/1xFn1OBJUuSdnApDseEczKhtNzyGekauK/view) dan unzip di sebuah folder baru yang bernama clues.Jika folder clues sudah ada maka program tidak akan melakukan downoadnya 
+```c
+#define CLUES_URL "https://drive.google.com/uc?export=download&id=1xFn1OBJUuSdnApDseEczKhtNzyGekauK"
+#define ZIP_FILE "Clues.zip"
+#define FOLDER_NAME "Clues"
+
+void downloaddanunzip() {
+    struct stat st = {0};
+    if (stat(FOLDER_NAME, &st) == -1) {
+        pid_t pid = fork();
+        if (pid == 0) {
+            char *args[] = {"wget", "-q", "--no-check-certificate", CLUES_URL, "-O", ZIP_FILE, NULL};
+            execvp("wget", args);
+            perror("gagal");
+            exit(1);
+        }
+        wait(NULL);
+        pid = fork();
+        if (pid == 0) {
+            char *args[] = {"unzip", "-q", ZIP_FILE, NULL};
+            execvp("unzip", args);
+            perror("gagal");
+            exit(1);
+        }
+        wait(NULL);
+        remove(ZIP_FILE);
+        printf("Download dan unzip selesai\n");
+    } else {
+        printf("Folder Clues sudah ada\n");
+    }
+}
+```
+### B
+kedua,pada action.c kita buat program untuk menyaring hasil unzip dan memindahkan file-file yang hanya dinamakan dengan 1 huruf dan 1 angka tanpa special character kedalam folder bernama Filtered dan file yang tidak terlihat akan dihapus
+```c
+void filterfile() {
+    mkdir("Filtered", 0755);
+    pid_t pid = fork();
+    if (pid == 0) {
+        char *args[] = {"find", "Clues", "-type", "f", "-name", "[a-zA-Z0-9].txt", "-exec", "mv", "{}", "Filtered/", ";", NULL};
+        execvp("find", args);
+        perror("gagal");
+        exit(1);
+    }
+    wait(NULL);
+    pid = fork();
+    if (pid == 0) {
+        char *args[] = {"find", "Clues", "-type", "f", "!", "-name", "[a-zA-Z0-9].txt", "-delete", NULL};
+        execvp("find", args);
+        perror("gagal");
+        exit(1);
+    }
+    wait(NULL);
+    printf("Filter berhasil\n");
+}
+```
+
+### C
+ketiga,setelah membuat program action.c bisa menyaring ,stelah itu kita membuat program action.c bisa meletakan/redirect isi dari setiap .txt file tersebut kedalam satu file yaitu Combined.txt dengan menggunakan FILE pointer. Tetapi, terdapat urutan khusus saat redirect isi dari .txt tersebut, yaitu urutannya bergantian dari .txt dengan nama angka lalu huruf lalu angka lagi lalu huruf lagi. Lalu semua file .txt sebelumnya dihapus
+```c
+void combinefile() {
+    FILE *combined = fopen("Combined.txt", "w");
+    if (!combined) {
+        perror("gagal");
+        return;
+    }
+
+    for (int i = 0; i < 26; i++) {
+        char numFile[256], letterFile[256];
+        snprintf(numFile, sizeof(numFile), "Filtered/%d.txt", i+1);
+        FILE *file = fopen(numFile, "r");
+        if (file) {
+            int c;
+            while ((c = fgetc(file)) != EOF) {
+                fputc(c, combined);
+            }
+            fclose(file);
+            remove(numFile);
+        }
+
+        snprintf(letterFile, sizeof(letterFile), "Filtered/%c.txt", 'a' + i);
+        file = fopen(letterFile, "r");
+        if (file) {
+            int c;
+            while ((c = fgetc(file)) != EOF) {
+                fputc(c, combined);
+            }
+            fclose(file);
+            remove(letterFile);
+        }
+    }
+    
+    fclose(combined);
+    printf("Combined file berhasil\n");
+}
+```
+### D
+keempat,membuat fungsi Rot13 untuk decode string Combined.txt dan meletakan hasil dari yang telah di-decode tadi kedalam file bernama Decoded.txt.
+```c
+void decode() {
+    FILE *combined = fopen("Combined.txt", "r");
+    if (!combined) {
+        perror("gagal");
+        return;
+    }
+
+    FILE *decoded = fopen("Decoded.txt", "w");
+    if (!decoded) {
+        perror("gagal");
+        fclose(combined);
+        return;
+    }
+
+    int c;
+    while ((c = fgetc(combined)) != EOF) {
+        if (isalpha(c)) {
+            char base = islower(c) ? 'a' : 'A';
+            c = base + (c - base + 13) % 26;
+        }
+        fputc(c, decoded);
+    }
+
+    fclose(combined);
+    fclose(decoded);
+    printf("Decode berhasil\n");
+}
+```
+### E
+Terakhir kita membuat fungsi untuk memanggil fungsi fungsi diatas dengan comand tertentu seperti 
+```
+./action	        Mengunduh dan unziip file Clues.zip
+```
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20195957.png)
+```
+./action -m Filter	Menyaring file .txt ke folder Filtered
+```
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20200024.png)
+```
+./action -m Combine	Gabungkan semua file menjadi satu Combined.txt
+```
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20200220.png)
+```
+./action -m Decode	Dekripsi isi file jadi Decoded.txt
+```
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20200313.png)
+
+fungsi ini akan Berikan error handling yakni memberi tahu command yang benar jika salah argumen.
+
+```c
+void command() {
+    printf("Gunakan:\n");
+    printf("./action\n");
+    printf("./action -m Filter\n");
+    printf("./action -m Combine\n");
+    printf("./action -m Decode\n");
+}
+
+int main(int argc, char *argv[]) {
+    if (argc == 1) {
+        downloaddanunzip();
+    } 
+    else if (argc == 3 && strcmp(argv[1], "-m") == 0) {
+        if (strcmp(argv[2], "Filter") == 0) {
+            filterfile();
+        } 
+        else if (strcmp(argv[2], "Combine") == 0) {
+            combinefile();
+        } 
+        else if (strcmp(argv[2], "Decode") == 0) {
+            decode();
+        } 
+        else {
+            printf("Invalid command.\n");
+            command();
+        }
+    } 
+    else {
+        command();
+    }
+    return 0;
+}
+```
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20202348.png)
+## F
+setelah melakukan decode maka bisa menjalankan
+```
+cat decode.txt
+```
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20200321.png)
+
+untuk melihat isinya yang berupa password yang dimasukan ke ![Lokasi](https://dragon-pw-checker.vercel.app/)
+
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20202715.png)
+
+
+
+
+
+
 
 ### • Soal 1.A
 ### • Soal 1.B
