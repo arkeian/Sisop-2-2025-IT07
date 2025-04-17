@@ -2094,6 +2094,17 @@ printf("%s has been unblocked successfully\n", user);
 11. Menampilkan output melalui stdout kepada user yang menjalankan program untuk menyatakan bahwa target user berhasil diangkat blokirnya.
 
 ### • Soal 4.F: Debugmon Log File
+
+Pada subsoal 4.F: Debugmon Log File, kita diperintahkan untuk membahas mengenai file log yang telah dibuat pada subsoal 4.B sampai 4.E. Pada program ini, file log disimpan pada file `/tmp/debugmon_[USER].log`, dengan ketentuan setiap user memiliki file log yang berbeda. Proses kemudian dicatat didalamnya dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(RUNNING)` atau `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(FAILED)` tergantung apakah proses yang berkaitan hendak dijalankan atau digagalkan. Adapun tampilan `/tmp/debugmon_[USER].log` untuk beberapa kasus pencatatan adalah sebagai berikut:
+
+<p align="center">
+	<img src="https://github.com/user-attachments/assets/d6da33ca-b9ae-4a8e-bccc-67b253e732b5" alt="Comparison Operator Error" width="640" height="360">  
+</p>
+
+> (1) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon daemon [USER]` menggunakan command `watch tail /tmp/debugmon_[USER].log`.
+  
+Pada file log tersebut, dapat terlihat proses-proses yang sedang dijalankan oleh user, bahkan dapat terlihat juga bahwa salah satu proses yang baru saja berjalan adalah proses daemon `debugmon` milik user.
+
 ### • Kendala Pengerjaan Soal
 ## • Revisi
 ### • Revisi Soal 1
