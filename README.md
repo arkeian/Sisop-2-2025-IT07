@@ -69,9 +69,9 @@ Berikut contoh struktur directory akhir:
 
 Notes: Berikan error handling yakni memberi tahu command yang benar jika salah argumen.
 
-### LANGKAH LANGKAH PENGERJAAN
+### • LANGKAH LANGKAH PENGERJAAN
 
-### A
+### • Soal 1.A
 Pertama,pada action.c kita membuat program agar bisa melakukan download [Clues.zip](https://drive.google.com/file/d/1xFn1OBJUuSdnApDseEczKhtNzyGekauK/view) dan unzip di sebuah folder baru yang bernama clues.Jika folder clues sudah ada maka program tidak akan melakukan downoadnya 
 ```c
 #define CLUES_URL "https://drive.google.com/uc?export=download&id=1xFn1OBJUuSdnApDseEczKhtNzyGekauK"
@@ -104,7 +104,7 @@ void downloaddanunzip() {
     }
 }
 ```
-### B
+### • Soal 1.B
 kedua,pada action.c kita buat program untuk menyaring hasil unzip dan memindahkan file-file yang hanya dinamakan dengan 1 huruf dan 1 angka tanpa special character kedalam folder bernama Filtered dan file yang tidak terlihat akan dihapus
 ```c
 void filterfile() {
@@ -129,7 +129,7 @@ void filterfile() {
 }
 ```
 
-### C
+### • Soal 1.C
 ketiga,setelah membuat program action.c bisa menyaring ,stelah itu kita membuat program action.c bisa meletakan/redirect isi dari setiap .txt file tersebut kedalam satu file yaitu Combined.txt dengan menggunakan FILE pointer. Tetapi, terdapat urutan khusus saat redirect isi dari .txt tersebut, yaitu urutannya bergantian dari .txt dengan nama angka lalu huruf lalu angka lagi lalu huruf lagi. Lalu semua file .txt sebelumnya dihapus
 ```c
 void combinefile() {
@@ -168,7 +168,7 @@ void combinefile() {
     printf("Combined file berhasil\n");
 }
 ```
-### D
+### • Soal 1.D
 keempat,membuat fungsi Rot13 untuk decode string Combined.txt dan meletakan hasil dari yang telah di-decode tadi kedalam file bernama Decoded.txt.
 ```c
 void decode() {
@@ -199,7 +199,7 @@ void decode() {
     printf("Decode berhasil\n");
 }
 ```
-### E
+### • Soal 1.E
 Terakhir kita membuat fungsi untuk memanggil fungsi fungsi diatas dengan comand tertentu seperti 
 ```
 ./action	        Mengunduh dan unziip file Clues.zip
@@ -255,8 +255,9 @@ int main(int argc, char *argv[]) {
 }
 ```
 ![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20202348.png)
-## F
-setelah melakukan decode maka bisa menjalankan
+
+### • Penutupan
+Setelah melakukan decode maka bisa menjalankan
 ```
 cat decode.txt
 ```
@@ -266,7 +267,7 @@ untuk melihat isinya yang berupa password yang dimasukan ke ![Lokasi](https://dr
 
 ![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20202715.png)
 
-### • Kendala Pengerjaan Soal
+### • Kendala Pengerjaan Soal 1
 ## • Soal 2 : Starterkit
 
 ### • Pendahuluan
@@ -548,9 +549,9 @@ void write_log(const char *message) {
     fclose(fp);
 }
 ```
-### • Kendala Pengerjaan Soal
+### • Kendala Pengerjaan Soal 2
 ## • Soal 3
-### • Kendala Pengerjaan Soal
+### • Kendala Pengerjaan Soal 3
 
 ## • Soal 4: Debugmon
 
@@ -2389,14 +2390,15 @@ Pada subsoal 4.F: Debugmon Log File, kita diperintahkan untuk membahas mengenai 
 Pada file log tersebut, dapat terlihat proses-proses yang sedang dijalankan oleh user, bahkan dapat terlihat juga bahwa salah satu proses yang baru saja berjalan adalah proses daemon `debugmon` milik user.
 
 <p align="center">
-	<img src="https://github.com/user-attachments/assets/2c188d78-6c8b-40a0-b97b-1baa17481225" alt="File Log -> Fail" width="640" height="360">  
+	<img src="https://github.com/user-attachments/assets/6db906f2-b071-462d-8d4d-abed07edacb3" alt="File Log -> Fail" width="640" height="360">  
 </p>
 
-> (2) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` menggunakan command `tail -n 15 /tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon fail [USER]`
+> (2) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` menggunakan command `tail -n 15 /tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon fail [USER]`.
 
 Pada file log tersebut, dapat terlihat proses-proses yang sebelumnya sempat dijalankan oleh target user dan sekarang telah dimatikan.
 
-### • Kendala Pengerjaan Soal
+### • Kendala Pengerjaan Soal 4
+
 ## • Revisi
 ### • Revisi Soal 1
 ### • Revisi Soal 2
