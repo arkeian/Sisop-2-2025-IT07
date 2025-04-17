@@ -15,10 +15,10 @@ Kamu terbangun secara tiba-tiba di suatu lokasi yang tidak diketahui, saat kamu 
 Ia merupakan naga bernama Cyrus yang menjaga pintu tersebut dan kamu harus meng-input password yang benar untuk masuk. Karena tidak mungkin untuk menebak password, Ia memberikanmu sebuah clue  [Clues.zip](https://drive.google.com/file/d/1xFn1OBJUuSdnApDseEczKhtNzyGekauK/view)
  Untungnya, kamu merupakan Directory Lister yang jago sehingga clue ini dapat berubah menjadi sebuah password. [Author: Fico/ purofuro]
 
-## a.Downloading the Clues
+### • Soal 1.A: Downloading the Clues
 Karena kamu telah diberikan sebuah link Clues oleh Cyrus, kamu membuat file bernama action.c yang dimana kalau dijalankan seperti biasa tanpa argumen tambahan akan mendownload dan meng-unzip file tersebut secara langsung. Saat kamu melihat isi dari Clues tersebut, isinya berupa 4 folder yakni ClueA - ClueD dan di masing-masing folder tersebut terdapat .txt files dan isinya masih tidak jelas, mungkin beberapa kata di dalam .txt file yang dapat dicari di inventory website? (Note: inventory bersifat untuk seru-seruan saja).  Jangan lupa untuk menghapus Clues.zip setelah diekstrak dan buatlah apabila folder Clues sudah ada, maka command tersebut tidak akan mendownload Clues.zip lagi apabila dijalankan.
 
-## b.Filtering the Files
+### • Soal 1.B: Filtering the Files
 Karena kebanyakan dari file tersebut berawal dengan 1 huruf atau angka, kamu pun mencoba untuk memindahkan file-file yang hanya dinamakan dengan 1 huruf dan 1 angka tanpa special character kedalam folder bernama Filtered. Kamu tidak suka kalau terdapat banyak clue yang tidak berguna jadi disaat melakukan filtering, file yang tidak terfilter dihapus. Karena kamu tidak ingin membuat file kode lagi untuk filtering, maka kamu menggunakan file sebelumnya untuk filtering file-file tadi dengan menambahkan argumen saat ingin menjalankan action.c
 
 Contoh penggunaan:
@@ -30,7 +30,7 @@ Struktur directory setelah filter:
 ![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum/Screenshot%202025-04-17%20185924.png)
 
 
-## c.Combine the File Content
+### • Soal 1.C: Combine the File Content
 Di setiap file .txt yang telah difilter terdapat satu huruf dan agar terdapat progress, Cyrus memberikan clue tambahan untuk meletakan/redirect isi dari setiap .txt file tersebut kedalam satu file yaitu Combined.txt dengan menggunakan FILE pointer. Tetapi, terdapat urutan khusus saat redirect isi dari .txt tersebut, yaitu urutannya bergantian dari .txt dengan nama angka lalu huruf lalu angka lagi lalu huruf lagi. Lalu semua file .txt sebelumnya dihapus. Seperti halnya tadi, agar efisien kamu ingin menjalankan action.c dengan argumen tambahan.
 
 Contoh urutan:
@@ -52,7 +52,7 @@ dst..
 ![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum/Screenshot%202025-04-17%20185951.png)
 		
 
-## d.Decode the file
+### • Soal 1.D: Decode the file
 Karena isi Combined.txt merupakan string yang random, kamu 
 memiliki ide untuk menggunakan Rot13 untuk decode string tersebut dan meletakan hasil dari yang telah di-decode tadi kedalam file bernama Decoded.txt. Jalankan file action.c dengan argumen tambahan untuk proses decoding ini. 
 
@@ -61,7 +61,7 @@ Contoh penggunaan:
 puro@furo:~$ ./action -m Decode
 ```
 
-## e.Password Check
+### • Soal 1.E: Password Check
 Karena kamu sudah mendapatkan password tersebut, kamu mencoba untuk mengecek apakah password yang sudah kamu dapatkan itu benar atau tidak dengan cara di-input ke lokasi tadi.
 
 Berikut contoh struktur directory akhir:
@@ -266,17 +266,6 @@ untuk melihat isinya yang berupa password yang dimasukan ke ![Lokasi](https://dr
 
 ![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20202715.png)
 
-
-
-
-
-
-
-### • Soal 1.A
-### • Soal 1.B
-### • Soal 1.C
-### • Soal 1.D
-### • Soal 1.E
 ### • Kendala Pengerjaan Soal
 ## • Soal 2 : Starterkit
 
@@ -2392,12 +2381,20 @@ printf("%s has been unblocked successfully\n", user);
 Pada subsoal 4.F: Debugmon Log File, kita diperintahkan untuk membahas mengenai file log yang telah dibuat pada subsoal 4.B sampai 4.E. Pada program ini, file log disimpan pada file `/tmp/debugmon_[USER].log`, dengan ketentuan setiap user memiliki file log yang berbeda. Proses kemudian dicatat didalamnya dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(RUNNING)` atau `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(FAILED)` tergantung apakah proses yang berkaitan hendak dijalankan atau digagalkan. Adapun tampilan `/tmp/debugmon_[USER].log` untuk beberapa kasus pencatatan adalah sebagai berikut:
 
 <p align="center">
-	<img src="https://github.com/user-attachments/assets/d6da33ca-b9ae-4a8e-bccc-67b253e732b5" alt="Comparison Operator Error" width="640" height="360">  
+	<img src="https://github.com/user-attachments/assets/d6da33ca-b9ae-4a8e-bccc-67b253e732b5" alt="File Log -> Daemon" width="640" height="360">  
 </p>
 
-> (1) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon daemon [USER]` menggunakan command `watch tail /tmp/debugmon_[USER].log`.
+> (1) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` menggunakan command `watch tail /tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon daemon [USER]`.
   
 Pada file log tersebut, dapat terlihat proses-proses yang sedang dijalankan oleh user, bahkan dapat terlihat juga bahwa salah satu proses yang baru saja berjalan adalah proses daemon `debugmon` milik user.
+
+<p align="center">
+	<img src="https://github.com/user-attachments/assets/2c188d78-6c8b-40a0-b97b-1baa17481225" alt="File Log -> Fail" width="640" height="360">  
+</p>
+
+> (2) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` menggunakan command `tail -n 15 /tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon fail [USER]`
+
+Pada file log tersebut, dapat terlihat proses-proses yang sebelumnya sempat dijalankan oleh target user dan sekarang telah dimatikan.
 
 ### • Kendala Pengerjaan Soal
 ## • Revisi
