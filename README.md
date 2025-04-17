@@ -2382,7 +2382,7 @@ printf("%s has been unblocked successfully\n", user);
 Pada subsoal 4.F: Debugmon Log File, kita diperintahkan untuk membahas mengenai file log yang telah dibuat pada subsoal 4.B sampai 4.E. Pada program ini, file log disimpan pada file `/tmp/debugmon_[USER].log`, dengan ketentuan setiap user memiliki file log yang berbeda. Proses kemudian dicatat didalamnya dengan format `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(RUNNING)` atau `[DD-MM-YYYY]-[HH:MM:SS]_[COMMAND]_STATUS(FAILED)` tergantung apakah proses yang berkaitan hendak dijalankan atau digagalkan. Adapun tampilan `/tmp/debugmon_[USER].log` untuk beberapa kasus pencatatan adalah sebagai berikut:
 
 <p align="center">
-	<img src="https://github.com/user-attachments/assets/d6da33ca-b9ae-4a8e-bccc-67b253e732b5" alt="File Log -> Daemon" width="640" height="360">  
+	<img src="https://github.com/user-attachments/assets/d6da33ca-b9ae-4a8e-bccc-67b253e732b5" alt="between subtle shading and the absence of light" width="640" height="360">  
 </p>
 
 > (1) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` menggunakan command `watch tail /tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon daemon [USER]`.
@@ -2390,14 +2390,46 @@ Pada subsoal 4.F: Debugmon Log File, kita diperintahkan untuk membahas mengenai 
 Pada file log tersebut, dapat terlihat proses-proses yang sedang dijalankan oleh user, bahkan dapat terlihat juga bahwa salah satu proses yang baru saja berjalan adalah proses daemon `debugmon` milik user.
 
 <p align="center">
-	<img src="https://github.com/user-attachments/assets/6db906f2-b071-462d-8d4d-abed07edacb3" alt="File Log -> Fail" width="640" height="360">  
+	<img src="https://github.com/user-attachments/assets/6db906f2-b071-462d-8d4d-abed07edacb3" alt="lies the nuance of iqlusion" width="640" height="360">  
 </p>
 
 > (2) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` menggunakan command `tail -n 15 /tmp/debugmon_[USER].log` setelah menjalankan program `./debugmon fail [USER]`.
 
 Pada file log tersebut, dapat terlihat proses-proses yang sebelumnya sempat dijalankan oleh target user dan sekarang telah dimatikan.
 
+<p align="center">
+	<img src="https://github.com/user-attachments/assets/781bc2bb-cd74-4978-a7ca-06e8fabf8048" alt="it was totally invisible hows that possible ?" width="640" height="360">  
+</p>
+
+> (3) Screenshot potret tampilan isi file `/tmp/debugmon_[USER].log` menggunakan command `tail -n 15 /tmp/debugmon_[USER].log` setelah mencoba menjalankan program `debugmon` untuk user yang diblokir melalui user yang berbeda (tidak diblokir).
+
+Setelah menjalankan program `./debugmon fail [USER]`, apabila user lain selain yang telah diblokir mencoba untuk menjalankan program `debugmon` dengan user yang telah diblokir sebagai targetnya, maka program tidak akan berjalan karena implementasi function `user_cant_run_debugmon_no_more()` dan percobaan (attempt) untuk menjalankan program `debugmon` akan dicatat ke file log.
+
 ### • Kendala Pengerjaan Soal 4
+
+#### a. Compile-Time Error:
+
+<p align="center">
+	<img src="https://github.com/user-attachments/assets/f7576db0-b04d-4a55-a395-b1d9d18c2f36" alt="they used the earths magnetic field X" width="640" height="360">  
+</p>
+
+> (4) Screenshot potret tampilan program `debugmon` yang gagal di-compile karena variabel `argv[]` pada function `run_commands_using_execvp()` dideklarasikan menggunakan tipe data `const char *argv[]`.
+
+Hal ini dikarenakan command `execvp()` ternyata membutuhkan parameter `__argv` dalam tipe data `char *const argv[]`.
+
+#### b. Run-Time Error:
+
+<p align="center">
+	<img src="https://github.com/user-attachments/assets/be8a5aa4-8071-4949-82fd-eff8fdf251e2" alt="the information was gathered and transmitted undergruund to an unknown location X" width="640" height="360">  
+</p>
+
+> (5) Screenshot potret tampilan program `debugmon` yang berhasil di-compile dan dijalankan, namun keluar secara gagal.
+
+Permasalahan yang muncul pada CLI berakar dari function `user_cant_run_any_commands_no_more()` dan `un_user_cant_run_any_commands_no_more()` dimana commands yang di-passing ek function `run_commands_using_execvp()` seperti `usermod` dan `chattr` membutuhkan `root` permission untuk dijalankan. Alhasil, apabila program `./debugmon fail [USER]` atau `./debugmon revert [USER]` dijalankan tidak menggunakan `sudo`, maka program akan gagal.  
+  
+Namun di sisi lain, apabila program `./debugmon fail [USER]` atau `./debugmon revert [USER]` dijalankan menggunakan `sudo`, semua file yang dibuat oleh program pada folder `/tmp` akan dimiliki oleh user `root`, sehingga berdampak pada akses file-file tersebut program lain `debugmon`, seperti `./debugmon daemon [USER]` dan `./debugmon stop [USER]`.  
+
+Pada kasus seperti ini, solusi preventifnya adalah secara konsisten menjalankan program `debugmon` apapun menggunakan `sudo` apabila nanti hendak menggunakan program `./debugmon fail [USER]` atau `./debugmon revert [USER]`. Namun, apabila sudah terjadi, maka file yang telah dibuat program `debugmon` pada `/tmp` perlu dihapus terlebih dahulu.
 
 ## • Revisi
 ### • Revisi Soal 1
