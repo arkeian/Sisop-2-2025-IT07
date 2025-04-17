@@ -300,8 +300,42 @@ Dimana penjelasan untuk setiap header filenya:
 ```c
 #include <stdio.h>
 ```
-1. Menyediakan elemen yang berkaitan dengan I/O atau yang berkaitan dengan fungsi menampilkan error menggunakan stderr, menampilkan output ke terminal menggunakan stdout, dan memanipulasi file. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<stdio.h>` adalah: `fprintf()`, variabel global `stderr`, struct `FILE`, `fopen()`, `fscanf()`, `fgets()`, `sscanf()`, `snprintf()`, `fclose()`, `printf()`, `rename()`, dan `remove()`.
+1. Menyediakan elemen dari standard I/O yang berkaitan dengan fungsi menampilkan error menggunakan stderr, menampilkan output ke terminal menggunakan stdout, dan memanipulasi file. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<stdio.h>` adalah: `fprintf()`, macro `stderr`, struct `FILE`, `fopen()`, `fscanf()`, `fgets()`, `sscanf()`, `snprintf()`, `fclose()`, `printf()`, `rename()`, dan `remove()`.
 
+```c
+#include <stdlib.h>
+```
+2. Menyediakan elemen dari standard library yang berkaitan dengan fungsi konversi tipe data dan manajemen control process. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<stdlib.h>` adalah: `exit()`, macro `EXIT_FAILURE`, macro `EXIT_SUCCESS`, dan `atoi()`.
+
+```c
+#include <unistd.h>
+```
+3. Menyediakan elemen dari standard UNIX yang berkaitan dengan fungsi berinteraksi langsung dengan operating system. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<unistd.h>` adalah: `sysconf()`, macro `_SC_CLK_TCK`, macro `F_OK`, `fork()`, `setsid()`, `chdir()`, `close()`, macro `STDERR_FILENO`, macro `STDIN_FILENO`, macro `STDOUT_FILENO`, `getpid()`, `access()`, `sleep()`, dan `execvp()`.
+
+```c
+#include <string.h>
+```
+4. Menyediakan elemen yang berkaitan dengan fungsi memanipulasi tipe data `string`. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<string.h>` adalah: `strncmp()`, `strcspn()`, dan `strcmp()`.
+
+```c
+#include <dirent.h>
+```
+5. Menyediakan elemen yang berkaitan dengan fungsi traversal pada sebuah direktori. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<dirent.h>` adalah: struct `DIR`, `opendir()`, `readdir()`, dan `closedir()`.
+
+```c
+#include <sys/types.h>
+```
+6. Menyediakan elemen yang berkaitan dengan tipe data tambahan. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<sys/types.h>` adalah: tipe data `uid_t` dan `pid_t`.
+
+```c
+#include <sys/wait.h>
+```
+7. Menyediakan elemen yang berkaitan dengan menunggu suatu child process. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<sys/wait.h>` adalah: `wait()`, dan `WIFEXITED()`.
+
+```c
+#include <pwd.h>
+```
+8. 
 Sedangkan, tampilan function `main()` untuk dapat menjalankan argumen-argumen yang diberikan kepada program `debugmon` adalah sebagai berikut:
 
 ```c
