@@ -80,7 +80,7 @@ Notes: Berikan error handling yakni memberi tahu command yang benar jika salah a
 
 ### • Pendahuluan
 
-Soal 2 terdiri dari enam subsoal, di mana subsoal A–E merupakan argumen dari `./starterkit`, subsoal F merupakan error handling sederhana untuk mencegah penggunaan yang salah pada program, dan soal G merupakan sistem logging aktivitas `starterkit`. Program ini dirancang untuk berjalan sebagai daemon yang memonitor direktori tertentu dan melakukan tindakan seperti karantina file terenkripsi, pengembalian file, penghapusan file permanen, serta penghentian proses daemon itu sendiri. Masing-masing argumen menjalankan fungsi spesifik yang diimplementasikan dalam bahasa pemrograman C dengan memanfaatkan fitur-fitur sistem operasi Linux seperti manajemen proses, direktori, sinyal, serta encoding dan decoding base64. Adapun tampilan `main()` untuk dapat menjalankan argumen pada starterkit adalah sebagai berikut :
+Soal 2 terdiri dari tujuh subsoal, di mana subsoal A–E merupakan argumen dari `./starterkit`, subsoal F merupakan error handling sederhana untuk mencegah penggunaan yang salah pada program, dan soal G merupakan sistem logging aktivitas `starterkit`. Program ini dirancang untuk berjalan sebagai daemon yang memonitor direktori tertentu dan melakukan tindakan seperti karantina file terenkripsi, pengembalian file, penghapusan file permanen, serta penghentian proses daemon itu sendiri. Masing-masing argumen menjalankan fungsi spesifik yang diimplementasikan dalam bahasa pemrograman C dengan memanfaatkan fitur-fitur sistem operasi Linux seperti manajemen proses, direktori, sinyal, serta encoding dan decoding base64. Adapun tampilan `main()` untuk dapat menjalankan argumen pada starterkit adalah sebagai berikut :
 ```c
 int main(int argc, char *argv[]) {
     printf("[*] Kanade's starter kit initializing...\n");
@@ -347,6 +347,16 @@ int main(int argc, char *argv[]) {
 Tampilan yang akan muncul pada saat terjadi kesalahan adalah seperti berikut :
 ![Error Handling](https://github.com/zenalmustofa/dokumentasi/blob/main/Screenshot%202025-04-17%20191502.png)
 ### • Soal 2.G
+Pada bagian ini, program starterkit dirancang untuk mencatat setiap aktivitas yang dilakukan oleh pengguna ke dalam file log bernama activity.log. Tujuannya adalah agar setiap perintah yang dijalankan dapat direkam sebagai jejak aktivitas (audit trail), sehingga memudahkan dalam proses pelacakan, debugging, maupun dokumentasi kerja yang dilakukan oleh program. Berikut Function yang digunakan :
+```c
+void write_log(const char *message) {
+    FILE *fp = fopen(LOG_FILE, "a");
+    time_t now = time(NULL);
+    strftime(timestamp, sizeof(timestamp), "[%d-%m-%Y][%H:%M:%S]", localtime(&now));
+    fprintf(fp, "%s - %s\n", timestamp, message);
+    fclose(fp);
+}
+```
 ### • Kendala Pengerjaan Soal
 ## • Soal 3
 ### • Kendala Pengerjaan Soal
