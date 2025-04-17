@@ -344,6 +344,8 @@ int main(int argc, char *argv[]) {
     }
 }
 ```
+Tampilan yang akan muncul pada saat terjadi kesalahan adalah seperti berikut :
+![Error Handling](https://github.com/zenalmustofa/dokumentasi/blob/main/Screenshot%202025-04-17%20191502.png)
 ### • Soal 2.G
 ### • Kendala Pengerjaan Soal
 ## • Soal 3
