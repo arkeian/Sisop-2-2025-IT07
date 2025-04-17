@@ -22,39 +22,50 @@ Karena kamu telah diberikan sebuah link Clues oleh Cyrus, kamu membuat file bern
 Karena kebanyakan dari file tersebut berawal dengan 1 huruf atau angka, kamu pun mencoba untuk memindahkan file-file yang hanya dinamakan dengan 1 huruf dan 1 angka tanpa special character kedalam folder bernama Filtered. Kamu tidak suka kalau terdapat banyak clue yang tidak berguna jadi disaat melakukan filtering, file yang tidak terfilter dihapus. Karena kamu tidak ingin membuat file kode lagi untuk filtering, maka kamu menggunakan file sebelumnya untuk filtering file-file tadi dengan menambahkan argumen saat ingin menjalankan action.c
 
 Contoh penggunaan:
+```
 puro@furo:~$ ./action -m Filter
+```
 
-![Struktur directory setelah filter:]
+Struktur directory setelah filter:
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum/Screenshot%202025-04-17%20185924.png)
 
 
-Combine the File Content
+## c.Combine the File Content
 Di setiap file .txt yang telah difilter terdapat satu huruf dan agar terdapat progress, Cyrus memberikan clue tambahan untuk meletakan/redirect isi dari setiap .txt file tersebut kedalam satu file yaitu Combined.txt dengan menggunakan FILE pointer. Tetapi, terdapat urutan khusus saat redirect isi dari .txt tersebut, yaitu urutannya bergantian dari .txt dengan nama angka lalu huruf lalu angka lagi lalu huruf lagi. Lalu semua file .txt sebelumnya dihapus. Seperti halnya tadi, agar efisien kamu ingin menjalankan action.c dengan argumen tambahan.
 
 Contoh urutan:
 1.txt
+
 a.txt
+
 2.txt
+
 b.txt
+
 dst..
 
 		Contoh penggunaan:
 		puro@furo:~$ ./action -m Combine
 
 		Struktur directory setelah combine:
+
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum/Screenshot%202025-04-17%20185951.png)
 		
 
-Decode the file
+## d.Decode the file
 Karena isi Combined.txt merupakan string yang random, kamu 
 memiliki ide untuk menggunakan Rot13 untuk decode string tersebut dan meletakan hasil dari yang telah di-decode tadi kedalam file bernama Decoded.txt. Jalankan file action.c dengan argumen tambahan untuk proses decoding ini. 
 
 Contoh penggunaan:
+```
 puro@furo:~$ ./action -m Decode
+```
 
-
-Password Check
+## e.Password Check
 Karena kamu sudah mendapatkan password tersebut, kamu mencoba untuk mengecek apakah password yang sudah kamu dapatkan itu benar atau tidak dengan cara di-input ke lokasi tadi.
 
 Berikut contoh struktur directory akhir:
+![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum/image.png)
 
 Notes: Berikan error handling yakni memberi tahu command yang benar jika salah argumen.
 
