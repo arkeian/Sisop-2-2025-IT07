@@ -315,6 +315,24 @@ Program akan menghentikan proses daemon dan PID dari proses disimpan di file sta
 ./starterkit --shutdown
 ```
 ### • Soal 2.F
+Pada soal ini, akan ditambahkan fitur `error handling` sederhana untuk mencegah penggunaan yang salah pada program. Jika pengguna memasukkan argumen yang tidak dikenali oleh program, maka akan muncul pesan kesalahan(error). Berikut ini function nya :
+```c
+void print_usage() {
+    printf("Usage:\n");
+    printf("  ./starterkit --decrypt\n");
+    printf("  ./starterkit --quarantine\n");
+    ...
+}
+
+int main(int argc, char *argv[]) {
+    ...
+    else {
+        fprintf(stderr, "[!] Invalid argument: %s\n", argv[1]);
+        print_usage();
+        return 1;
+    }
+}
+```
 ### • Soal 2.G
 ### • Kendala Pengerjaan Soal
 ## • Soal 3
