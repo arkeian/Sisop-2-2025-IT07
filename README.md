@@ -273,7 +273,36 @@ Program akan menghentikan proses daemon dan PID dari proses disimpan di file sta
 
 ### • Pendahuluan
 
-Soal 4 terdiri dari enam subsoal, dimana subsoal A-E merupakan argumen dari `./debugmon` dan subsoal F merupakan sistem logging aktivitas debugmon. Adapun tampilan `main()` untuk dapat menjalankan argumen pada debugmon adalah sebagai berikut:
+Soal 4 terdiri dari enam subsoal, dimana subsoal A-E merupakan argumen dari `./debugmon` dan subsoal F merupakan sistem logging aktivitas debugmon. Adapun tampilan file header dan macros yang digunakan agar program `debugmon` dapat berjalan adalah sebagai berikut:
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <dirent.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <pwd.h>
+#include <ctype.h>
+#include <signal.h>
+#include <time.h>
+#include <stdbool.h>
+
+#define BUFFER 256
+#define BUFFER2 512
+#define BUFFER3 526
+#define ll long long
+```
+
+Dimana penjelasan untuk setiap header filenya:
+
+```c
+#include <stdio.h>
+```
+1. Menyediakan elemen yang berkaitan dengan I/O atau yang berkaitan dengan fungsi menampilkan error menggunakan stderr, menampilkan output ke terminal menggunakan stdout, dan memanipulasi file. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<stdio.h>` adalah: `fprintf()`, variabel global `stderr`, struct `FILE`, `fopen()`, `fscanf()`, `fgets()`, `sscanf()`, `snprintf()`, `fclose()`, `printf()`, `rename()`, dan `remove()`.
+
+Sedangkan, tampilan function `main()` untuk dapat menjalankan argumen-argumen yang diberikan kepada program `debugmon` adalah sebagai berikut:
 
 ```c
 int main(int argc, char *argv[]) {
