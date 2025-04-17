@@ -273,7 +273,7 @@ Program akan menghentikan proses daemon dan PID dari proses disimpan di file sta
 
 ### • Pendahuluan
 
-Soal 4 terdiri dari enam subsoal, dimana subsoal A-E merupakan argumen dari `./debugmon` dan subsoal F merupakan sistem logging aktivitas debugmon. Adapun tampilan file header dan macros yang digunakan agar program `debugmon` dapat berjalan adalah sebagai berikut:
+Soal 4 terdiri dari enam subsoal, dimana subsoal A-E merupakan argumen dari `./debugmon` dan subsoal F merupakan sistem logging aktivitas debugmon. Adapun tampilan preprocessors yang digunakan agar program `debugmon` dapat berjalan adalah sebagai berikut:
 
 ```c
 #include <stdio.h>
@@ -295,13 +295,13 @@ Soal 4 terdiri dari enam subsoal, dimana subsoal A-E merupakan argumen dari `./d
 #define ll long long
 ```
 
-Dimana penjelasan untuk setiap header filenya:
+Dimana penjelasan untuk setiap preprocessornya:
 
 ```c
 #include <stdio.h>
 ```
 1. Menyediakan elemen dari standard I/O yang berkaitan dengan fungsi menampilkan error menggunakan stderr, menampilkan output ke terminal menggunakan stdout, dan memanipulasi file. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<stdio.h>` adalah: `fprintf()`, macro `stderr`, struct `FILE`, `fopen()`, `fscanf()`, `fgets()`, `sscanf()`, `snprintf()`, `fclose()`, `printf()`, `rename()`, dan `remove()`.
-
+time
 ```c
 #include <stdlib.h>
 ```
@@ -335,7 +335,40 @@ Dimana penjelasan untuk setiap header filenya:
 ```c
 #include <pwd.h>
 ```
-8. 
+8. Menyediakan struct passwd yang memiliki data (member) nama user dan user ID.
+
+```c
+#include <ctype.h>
+```
+9. Menyediakan elemen yang berkaitan dengan pengecekan tipe data suatu variabel. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<ctype.h>` adalah: `isdigit()`.
+
+```c
+#include <signal.h>
+```
+10. Menyediakan elemen yang berkaitan dengan penanganan signal yang muncul pada suatu sistem. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<signal.h>` adalah: `kill()` dan macro `SIGKILL`.
+
+```c
+#include <time.h>
+```
+11. Menyediakan struct tm yang memiliki data (member) hari, bulan, tahun, jam, menit, dan detik saat program dijalankan dan elemen lain yang berkaitan dengan fungsi mengetahui waktu. dapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<time.h>` adalah: `time()`, `localtime()`, dan `strftime()`.
+
+```c
+#include <stdbool.h>
+```
+12. Menyediakan tipe data `bool`, serta value `true` dan `false`.
+
+```c
+#define BUFFER 256
+#define BUFFER2 512
+#define BUFFER3 526
+```
+13. Mendefinisikan macros `BUFFER`, `BUFFER2`, dan `BUFFER3` yang merepresentasikan ukuran suatu fixed array.
+
+```c
+#define ll long long
+```
+14. Mendefinisikan macro `ll` yang merupakan singkatan dari tipe data `long long`.
+
 Sedangkan, tampilan function `main()` untuk dapat menjalankan argumen-argumen yang diberikan kepada program `debugmon` adalah sebagai berikut:
 
 ```c
