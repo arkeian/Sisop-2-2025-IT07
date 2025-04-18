@@ -7,7 +7,7 @@
 | Zaenal Mustofa		| 5027241018 	|
 | Mochkamad Maulana Syafaat	| 5027241021 	|
 
-## • Soal 1
+## • Soal 1: Action
 Kamu terbangun secara tiba-tiba di suatu lokasi yang tidak diketahui, saat kamu melihat sekitar yang terlihat hanyalah kegelapan dan sebuah pintu dengan dua mata berwarna yang melihatmu dari lubang pintu tersebut.
 
 ![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum/Screenshot%202025-04-17%20185619.png)
@@ -2468,6 +2468,8 @@ Pada kasus seperti ini, solusi preventifnya adalah secara konsisten menjalankan 
 
 ## • Revisi
 ### • Revisi Soal 1
+Tidak ada revisi untuk Soal 1.
+
 ### • Revisi Soal 2
 #### • 2. a
 #### File Diunduh Ulang Meskipun Sudah Ada
