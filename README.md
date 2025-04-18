@@ -2418,7 +2418,7 @@ Setelah menjalankan program `./debugmon fail [USER]`, apabila user lain selain y
 Hal ini dikarenakan command `execvp()` ternyata membutuhkan parameter `__argv` dalam tipe data `char *const argv[]`.
 
 <p align="center">
-	<img src="https://github.com/user-attachments/assets/36f1526c-a41c-49e6-a3ee-77f79ae251d6" alt="they used the earths magnetic field X" width="640" height="360">  
+	<img src="https://github.com/user-attachments/assets/36f1526c-a41c-49e6-a3ee-77f79ae251d6" alt="the information was gathered and transmitted undergruund to an unknown location X" width="640" height="360">  
 </p>
 
 > (5) Screenshot potret tampilan program `debugmon` yang gagal di-compile karena mencoba memasukkan `string` dengan ukuran maksimal 269 bytes ke fixed array `procStatusPath[]` yang ukurannya hanya 256 bytes.
@@ -2428,8 +2428,9 @@ Hal ini dikarenakan secara umum ukuran `entry->d_name` diatur oleh sistem untuk 
 Pada kasus seperti ini, solusi preventifnya adalah dengan menambah ukuran buffer yang awalnya 256 bytes menjadi 512 bytes, serta membuat macro baru yaitu `BUFFER2` yang merepresentasikan angka 512.
 
 <p align="center">
-	<img src="https://github.com/user-attachments/assets/63455cb8-5bcc-445c-9df4-8dc783fa73d6" alt="they used the earths magnetic field X" width="640" height="360">  
+	<img src="https://github.com/user-attachments/assets/829febe3-3044-41b6-b6ef-390435177715" alt="does Langley know about this ? they should its buried out there somewhere X" width="640" height="360">  
 </p>
+
 
 > (6) Screenshot potret tampilan program `debugmon` yang gagal di-compile karena mencoba memasukkan `string` dengan ukuran maksimal 526 bytes ke fixed array `bashProfilePath[]` yang ukurannya hanya 512.
 
@@ -2440,12 +2441,20 @@ Pada kasus seperti ini, solusi preventifnya adalah dengan menambah ukuran buffer
 #### b. Run-Time Error:
 
 <p align="center">
-	<img src="https://github.com/user-attachments/assets/be8a5aa4-8071-4949-82fd-eff8fdf251e2" alt="the information was gathered and transmitted undergruund to an unknown location X" width="640" height="360">  
+	<img src="https://github.com/user-attachments/assets/0766c914-5aa3-4cfe-b4a9-0884f3ac8f1f" alt="who knows the exact location ? only WW this was his last message X" width="640" height="360">  
 </p>
 
-> (7) Screenshot potret tampilan program `debugmon` yang berhasil di-compile dan dijalankan, namun keluar secara gagal.
+> (7) Screenshot potret tampilan program `debugmon` yang berhasil di-compile dan dijalankan, namun keluar secara gagal karena mencoba untuk membebaskan pointer yang sama lebih dari satu kali.
 
-Permasalahan yang muncul pada CLI berakar dari function `user_cant_run_any_commands_no_more()` dan `un_user_cant_run_any_commands_no_more()` dimana commands yang di-passing ek function `run_commands_using_execvp()` seperti `usermod` dan `chattr` membutuhkan `root` permission untuk dijalankan. Alhasil, apabila program `./debugmon fail [USER]` atau `./debugmon revert [USER]` dijalankan tidak menggunakan `sudo`, maka program akan gagal.  
+Permasalahan yang ditampilkan pada CLI berakar dari function `f_up_the_selected_user_system()` karena penempatan yang salah untuk function `closedir(proc)` dan `fclose(logfile)` dimana kedua function tersebut ditempatkan di dalam while-loop. Untuk solusinya, maka hanya perlu memindahkan kedua function keluar dari while-loop.
+
+<p align="center">
+	<img src="https://github.com/user-attachments/assets/be8a5aa4-8071-4949-82fd-eff8fdf251e2" alt="thirty eight degrees fifty seven minutes six point five seconds north" width="640" height="360">  
+</p>
+
+> (8) Screenshot potret tampilan program `debugmon` yang berhasil di-compile dan dijalankan, namun keluar secara gagal.
+
+Permasalahan yang ditampilkan pada CLI berakar dari function `user_cant_run_any_commands_no_more()` dan `un_user_cant_run_any_commands_no_more()` dimana commands yang di-passing ek function `run_commands_using_execvp()` seperti `usermod` dan `chattr` membutuhkan `root` permission untuk dijalankan. Alhasil, apabila program `./debugmon fail [USER]` atau `./debugmon revert [USER]` dijalankan tidak menggunakan `sudo`, maka program akan gagal.  
   
 Namun di sisi lain, apabila program `./debugmon fail [USER]` atau `./debugmon revert [USER]` dijalankan menggunakan `sudo`, semua file yang dibuat oleh program pada folder `/tmp` akan dimiliki oleh user `root`, sehingga berdampak pada akses file-file tersebut program lain `debugmon`, seperti `./debugmon daemon [USER]` dan `./debugmon stop [USER]`.  
 
