@@ -267,7 +267,6 @@ untuk melihat isinya yang berupa password yang dimasukan ke ![Lokasi](https://dr
 
 ![alt text](https://github.com/jagosyafaat30/dokumetnsasi/blob/main/dokum%20utama/Screenshot%202025-04-17%20202715.png)
 
-### • Kendala Pengerjaan Soal 1
 ## • Soal 2 : Starterkit
 
 ### • Pendahuluan
