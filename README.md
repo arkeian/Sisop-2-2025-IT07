@@ -587,7 +587,6 @@ Dimana penjelasan untuk setiap preprocessornya:
 #include <stdio.h>
 ```
 1. Menyediakan elemen dari standard I/O yang berkaitan dengan fungsi menampilkan error menggunakan stderr, menampilkan output ke terminal menggunakan stdout, dan memanipulasi file. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<stdio.h>` adalah: `fprintf()`, macro `stderr`, struct `FILE`, `fopen()`, `fscanf()`, `fgets()`, `sscanf()`, `snprintf()`, `fclose()`, `printf()`, `rename()`, dan `remove()`.
-time
 ```c
 #include <stdlib.h>
 ```
