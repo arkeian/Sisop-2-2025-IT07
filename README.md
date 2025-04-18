@@ -634,7 +634,7 @@ time
 ```c
 #include <time.h>
 ```
-11. Menyediakan struct tm yang memiliki data (member) hari, bulan, tahun, jam, menit, dan detik saat program dijalankan dan elemen lain yang berkaitan dengan fungsi mengetahui waktu. dapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<time.h>` adalah: `time()`, `localtime()`, dan `strftime()`.
+11. Menyediakan struct tm yang memiliki data (member) hari, bulan, tahun, jam, menit, dan detik saat program dijalankan dan elemen lain yang berkaitan dengan fungsi mengetahui waktu. Adapun elemen yang digunakan pada program `debugmon` yang berkaitan dengan file header `<time.h>` adalah: `time()`, `localtime()`, dan `strftime()`.
 
 ```c
 #include <stdbool.h>
@@ -740,7 +740,7 @@ if (is_user_on_the_f_up_list(user)) {
 	}
 }
 ```
-4. Merupakan bagian dari subsoal 4.D: Fail User's System, dimana program memastikan apakah user memiliki akses untuk menjalankan program debugmon.
+4. Merupakan bagian dari subsoal 4.D: Fail User's System, dimana program memastikan apakah user memiliki akses untuk menjalankan program `debugmon`.
 
 ```c
 if (!strcmp(command, "list")) {
@@ -2459,6 +2459,12 @@ Permasalahan yang ditampilkan pada CLI berakar dari function `user_cant_run_any_
 Namun di sisi lain, apabila program `./debugmon fail [USER]` atau `./debugmon revert [USER]` dijalankan menggunakan `sudo`, semua file yang dibuat oleh program pada folder `/tmp` akan dimiliki oleh user `root`, sehingga berdampak pada akses file-file tersebut program lain `debugmon`, seperti `./debugmon daemon [USER]` dan `./debugmon stop [USER]`.  
 
 Pada kasus seperti ini, solusi preventifnya adalah secara konsisten menjalankan program `debugmon` apapun menggunakan `sudo` apabila nanti hendak menggunakan program `./debugmon fail [USER]` atau `./debugmon revert [USER]`. Namun, apabila sudah terjadi, maka file yang telah dibuat program `debugmon` pada `/tmp` perlu dihapus terlebih dahulu.
+<details>
+  <summary></summary>
+  Born with passion, raised in pure absurdity, and flown with questionable decisions.  
+    
+  \- ***arkeian***
+</details>
 
 ## • Revisi
 ### • Revisi Soal 1
