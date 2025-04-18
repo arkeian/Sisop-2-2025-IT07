@@ -2471,8 +2471,8 @@ Pada kasus seperti ini, solusi preventifnya adalah secara konsisten menjalankan 
 ### • Revisi Soal 2
 ### • 2. a
 **File Diunduh Ulang Meskipun Sudah Ada**
-Fungsi download_zip() bertugas mengunduh file ZIP dari sebuah URL menggunakan perintah wget. Namun, fungsi ini tidak melakukan pengecekan apakah file ZIP tersebut sudah ada di direktori saat ini. Akibatnya, file akan selalu diunduh ulang setiap kali program dijalankan, meskipun file tersebut sebenarnya sudah tersedia.
-**Solusi**
+### Fungsi download_zip() bertugas mengunduh file ZIP dari sebuah URL menggunakan perintah wget. Namun, fungsi ini tidak melakukan pengecekan apakah file ZIP tersebut sudah ada di direktori saat ini. Akibatnya, file akan selalu diunduh ulang setiap kali program dijalankan, meskipun file tersebut sebenarnya sudah tersedia.
+### **Solusi**
 Sebelum memanggil fungsi run_command() untuk wget, tambahkan pengecekan menggunakan access() atau fopen() untuk memverifikasi apakah file ZIP_FILE sudah ada. Contoh implementasi:
 ```c
 #include <unistd.h>
