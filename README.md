@@ -550,6 +550,10 @@ void write_log(const char *message) {
 }
 ```
 ### • Kendala Pengerjaan Soal 2
+Pada tahap awal pembuatan, program tidak bisa dikompilasi karena adanya kesalahan sintaks atau file yang tidak ditemukan. File starterkit.c tidak berada di direktori aktif saat menjalankan perintah gcc starterkit.c -o starterkit, sehingga muncul error :
+```
+cc1: fatal error: starterkit.c: No such file or directory
+```
 ## • Soal 3
 ### • Kendala Pengerjaan Soal 3
 
