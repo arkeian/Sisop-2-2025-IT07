@@ -554,8 +554,6 @@ Pada tahap awal pembuatan, program tidak bisa dikompilasi karena adanya kesalaha
 ```
 cc1: fatal error: starterkit.c: No such file or directory
 ```
-## • Soal 3
-### • Kendala Pengerjaan Soal 3
 
 ## • Soal 4: Debugmon
 
